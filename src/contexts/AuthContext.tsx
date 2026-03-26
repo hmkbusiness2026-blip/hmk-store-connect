@@ -56,25 +56,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const formatPhone = (phone: string) => {
-    if (phone.startsWith('+')) return phone;
-    if (phone.startsWith('0')) return '+2' + phone;
-    return '+2' + phone;
+  const phoneToEmail = (phone: string) => {
+    const digits = phone.replace(/\D/g, '');
+    return `${digits}@hmkstore.com`;
   };
 
   const signUp = async (phone: string, password: string) => {
-    const formatted = formatPhone(phone);
+    const fakeEmail = phoneToEmail(phone);
     const { error } = await supabase.auth.signUp({
-      phone: formatted,
+      email: fakeEmail,
       password,
     });
     return { error };
   };
 
   const signIn = async (phone: string, password: string) => {
-    const formatted = formatPhone(phone);
+    const fakeEmail = phoneToEmail(phone);
     const { error } = await supabase.auth.signInWithPassword({
-      phone: formatted,
+      email: fakeEmail,
       password,
     });
     return { error };
