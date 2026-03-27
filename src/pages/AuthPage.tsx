@@ -97,7 +97,7 @@ const AuthPage = () => {
             onClick={() => { setIsStaffMode(false); setIsLogin(true); }}
             className="w-full text-center text-xs text-primary hover:underline"
           >
-            {t('lang') === 'ar' ? 'عودة لتسجيل دخول العملاء' : 'Back to Customer Login'}
+            {lang === 'ar' ? 'عودة لتسجيل دخول العملاء' : 'Back to Customer Login'}
           </button>
         )}
       </motion.div>
