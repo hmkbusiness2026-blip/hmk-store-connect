@@ -43,7 +43,7 @@ const AuthPage = () => {
         <div className="text-center">
           <h1 className="font-display font-bold text-2xl gradient-text">{t('storeName')}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {isStaffMode ? (t('lang') === 'ar' ? 'تسجيل دخول الإدارة / المالك' : 'Admin / Owner Login') : (isLogin ? t('signIn') : t('signUp'))}
+            {isStaffMode ? (lang === 'ar' ? 'تسجيل دخول الإدارة / المالك' : 'Admin / Owner Login') : (isLogin ? t('signIn') : t('signUp'))}
           </p>
         </div>
 
