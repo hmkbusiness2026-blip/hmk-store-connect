@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { motion } from 'framer-motion';
 import { Loader2, Phone, Lock, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -11,6 +13,7 @@ const AuthPage = () => {
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const { signIn, signUp } = useAuth();
+  const { t } = useLanguage();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -22,49 +25,49 @@ const AuthPage = () => {
       : await signUp(phone, password);
     setLoading(false);
     if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast({ title: t('error'), description: error.message, variant: 'destructive' });
     } else if (!isLogin) {
-      toast({ title: 'Account created!', description: 'You can now sign in.' });
+      toast({ title: t('accountCreated'), description: t('canSignIn') });
       setIsLogin(true);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-sm glass-card p-6 space-y-6"
       >
         <div className="text-center">
-          <h1 className="font-display font-bold text-2xl gradient-text">HMK STORE</h1>
+          <h1 className="font-display font-bold text-2xl gradient-text">{t('storeName')}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {isLogin ? 'Sign in to your account' : 'Create a new account'}
+            {isLogin ? t('signIn') : t('signUp')}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative">
-            <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Phone size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
               type="tel"
-              placeholder="Phone number (e.g. 01012345678)"
+              placeholder={t('phone')}
               value={phone}
               onChange={e => setPhone(e.target.value)}
-              className="w-full pl-10 pr-3 py-2.5 rounded-md bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full ps-10 pe-3 py-2.5 rounded-md bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 
           <div className="relative">
-            <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Lock size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
               type={showPw ? 'text' : 'password'}
-              placeholder="Password"
+              placeholder={t('password')}
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="w-full pl-10 pr-10 py-2.5 rounded-md bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full ps-10 pe-10 py-2.5 rounded-md bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             />
-            <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+            <button type="button" onClick={() => setShowPw(!showPw)} className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground">
               {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
@@ -75,17 +78,25 @@ const AuthPage = () => {
             className="w-full py-2.5 rounded-md font-display font-bold text-sm gradient-cyan-purple text-primary-foreground disabled:opacity-40 flex items-center justify-center gap-2"
           >
             {loading ? <Loader2 size={16} className="animate-spin" /> : null}
-            {isLogin ? 'Sign In' : 'Sign Up'}
+            {isLogin ? t('signIn') : t('signUp')}
           </button>
         </form>
 
         <p className="text-center text-xs text-muted-foreground">
-          {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
+          {isLogin ? t('noAccount') : t('hasAccount')}{' '}
           <button onClick={() => setIsLogin(!isLogin)} className="text-primary hover:underline">
-            {isLogin ? 'Sign Up' : 'Sign In'}
+            {isLogin ? t('signUp') : t('signIn')}
           </button>
         </p>
       </motion.div>
+
+      {/* Staff Portal Link */}
+      <a
+        href="/staff"
+        className="mt-8 text-[10px] text-muted-foreground/30 hover:text-muted-foreground/60 transition-colors font-mono"
+      >
+        {t('staffPortal')}
+      </a>
     </div>
   );
 };

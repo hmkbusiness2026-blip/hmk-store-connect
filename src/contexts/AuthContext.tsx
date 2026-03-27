@@ -2,12 +2,15 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { supabase } from '@/lib/supabase';
 import type { User, Session } from '@supabase/supabase-js';
 
+type UserRole = 'client' | 'admin' | 'owner' | null;
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  userRole: 'client' | 'admin' | null;
+  userRole: UserRole;
   phoneNumber: string | null;
+  totalDiamonds: number;
   signUp: (phone: string, password: string) => Promise<{ error: any }>;
   signIn: (phone: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -19,7 +22,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [userRole, setUserRole] = useState<'client' | 'admin' | null>(null);
+  const [userRole, setUserRole] = useState<UserRole>(null);
+  const [totalDiamonds, setTotalDiamonds] = useState(0);
 
   const fetchRole = async (userId: string) => {
     const { data } = await supabase
@@ -27,7 +31,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .select('role')
       .eq('user_id', userId)
       .single();
-    setUserRole((data?.role as 'client' | 'admin') || 'client');
+    setUserRole((data?.role as UserRole) || 'client');
+  };
+
+  const fetchProfile = async (userId: string) => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('total_diamonds')
+      .eq('user_id', userId)
+      .single();
+    setTotalDiamonds(data?.total_diamonds || 0);
   };
 
   useEffect(() => {
@@ -36,9 +49,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          setTimeout(() => fetchRole(session.user.id), 0);
+          setTimeout(() => {
+            fetchRole(session.user.id);
+            fetchProfile(session.user.id);
+          }, 0);
         } else {
           setUserRole(null);
+          setTotalDiamonds(0);
         }
         setLoading(false);
       }
@@ -49,6 +66,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchRole(session.user.id);
+        fetchProfile(session.user.id);
       }
       setLoading(false);
     });
@@ -63,10 +81,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signUp = async (phone: string, password: string) => {
     const fakeEmail = phoneToEmail(phone);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: fakeEmail,
       password,
     });
+    if (!error && data.user) {
+      // Initialize profile and role via RPC
+      await supabase.rpc('initialize_new_user', {
+        p_user_id: data.user.id,
+        p_phone: phone,
+      });
+    }
     return { error };
   };
 
@@ -83,10 +108,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await supabase.auth.signOut();
   };
 
-  const phoneNumber = user?.phone || null;
+  const phoneNumber = user?.email?.replace('@hmkstore.com', '') || user?.phone || null;
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, userRole, phoneNumber, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, userRole, phoneNumber, totalDiamonds, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
