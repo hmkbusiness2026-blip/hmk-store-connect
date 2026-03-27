@@ -68,6 +68,60 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          phone: string | null
+          total_diamonds: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          phone?: string | null
+          total_diamonds?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          phone?: string | null
+          total_diamonds?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          customer_name: string
+          id: string
+          platform: string
+          rating: number
+          review_text: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          customer_name: string
+          id?: string
+          platform?: string
+          rating?: number
+          review_text: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          customer_name?: string
+          id?: string
+          platform?: string
+          rating?: number
+          review_text?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -91,12 +145,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_diamonds: {
+        Args: { p_diamonds: number; p_user_id: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      initialize_new_user: {
+        Args: { p_phone?: string; p_user_id: string }
+        Returns: undefined
       }
     }
     Enums: {
