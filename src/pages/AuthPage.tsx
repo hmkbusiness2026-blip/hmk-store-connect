@@ -8,25 +8,26 @@ import { useNavigate } from 'react-router-dom';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [isStaffMode, setIsStaffMode] = useState(false);
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const { signIn, signUp } = useAuth();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!phone || !password) return;
     setLoading(true);
-    const { error } = isLogin
+    const { error } = isLogin || isStaffMode
       ? await signIn(phone, password)
       : await signUp(phone, password);
     setLoading(false);
     if (error) {
       toast({ title: t('error'), description: error.message, variant: 'destructive' });
-    } else if (!isLogin) {
+    } else if (!isLogin && !isStaffMode) {
       toast({ title: t('accountCreated'), description: t('canSignIn') });
       setIsLogin(true);
     }
@@ -42,7 +43,7 @@ const AuthPage = () => {
         <div className="text-center">
           <h1 className="font-display font-bold text-2xl gradient-text">{t('storeName')}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {isLogin ? t('signIn') : t('signUp')}
+            {isStaffMode ? (lang === 'ar' ? 'تسجيل دخول الإدارة / المالك' : 'Admin / Owner Login') : (isLogin ? t('signIn') : t('signUp'))}
           </p>
         </div>
 
@@ -78,25 +79,37 @@ const AuthPage = () => {
             className="w-full py-2.5 rounded-md font-display font-bold text-sm gradient-cyan-purple text-primary-foreground disabled:opacity-40 flex items-center justify-center gap-2"
           >
             {loading ? <Loader2 size={16} className="animate-spin" /> : null}
-            {isLogin ? t('signIn') : t('signUp')}
+            {isStaffMode ? t('signIn') : (isLogin ? t('signIn') : t('signUp'))}
           </button>
         </form>
 
-        <p className="text-center text-xs text-muted-foreground">
-          {isLogin ? t('noAccount') : t('hasAccount')}{' '}
-          <button onClick={() => setIsLogin(!isLogin)} className="text-primary hover:underline">
-            {isLogin ? t('signUp') : t('signIn')}
+        {!isStaffMode && (
+          <p className="text-center text-xs text-muted-foreground">
+            {isLogin ? t('noAccount') : t('hasAccount')}{' '}
+            <button onClick={() => setIsLogin(!isLogin)} className="text-primary hover:underline">
+              {isLogin ? t('signUp') : t('signIn')}
+            </button>
+          </p>
+        )}
+
+        {isStaffMode && (
+          <button
+            onClick={() => { setIsStaffMode(false); setIsLogin(true); }}
+            className="w-full text-center text-xs text-primary hover:underline"
+          >
+            {lang === 'ar' ? 'عودة لتسجيل دخول العملاء' : 'Back to Customer Login'}
           </button>
-        </p>
+        )}
       </motion.div>
 
-      {/* Staff Portal Link */}
-      <a
-        href="/staff"
-        className="mt-8 text-[10px] text-muted-foreground/30 hover:text-muted-foreground/60 transition-colors font-mono"
-      >
-        {t('staffPortal')}
-      </a>
+      {!isStaffMode && (
+        <button
+          onClick={() => { setIsStaffMode(true); setPhone(''); setPassword(''); }}
+          className="mt-8 text-[10px] text-muted-foreground/30 hover:text-muted-foreground/60 transition-colors font-mono"
+        >
+          {t('staffPortal')}
+        </button>
+      )}
     </div>
   );
 };
