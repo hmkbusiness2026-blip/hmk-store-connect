@@ -7,8 +7,10 @@ import silkroadImg from '@/assets/game-silkroad.jpg';
 export interface Game {
   id: string;
   name: string;
+  nameAr: string;
   image: string;
   slug: string;
+  category: 'uid' | 'login' | 'other';
 }
 
 export interface PackageItem {
@@ -16,6 +18,7 @@ export interface PackageItem {
   name: string;
   price: number;
   popular?: boolean;
+  diamonds?: number;
 }
 
 export interface PackageCategory {
@@ -24,11 +27,11 @@ export interface PackageCategory {
 }
 
 export const games: Game[] = [
-  { id: 'mlbb', name: 'Mobile Legends', image: mlbbImg, slug: 'mobile-legends' },
-  { id: 'pubg', name: 'PUBG Mobile', image: pubgImg, slug: 'pubg-mobile' },
-  { id: 'genshin', name: 'Genshin Impact', image: genshinImg, slug: 'genshin-impact' },
-  { id: 'hok', name: 'Honor of Kings', image: hokImg, slug: 'honor-of-kings' },
-  { id: 'silkroad', name: 'Silkroad Mobile', image: silkroadImg, slug: 'silkroad-mobile' },
+  { id: 'mlbb', name: 'Mobile Legends', nameAr: 'موبايل ليجندز', image: mlbbImg, slug: 'mobile-legends', category: 'uid' },
+  { id: 'pubg', name: 'PUBG Mobile', nameAr: 'ببجي موبايل', image: pubgImg, slug: 'pubg-mobile', category: 'uid' },
+  { id: 'genshin', name: 'Genshin Impact', nameAr: 'جنشن إمباكت', image: genshinImg, slug: 'genshin-impact', category: 'login' },
+  { id: 'hok', name: 'Honor of Kings', nameAr: 'هونر أوف كينجز', image: hokImg, slug: 'honor-of-kings', category: 'other' },
+  { id: 'silkroad', name: 'Silkroad Mobile', nameAr: 'سيلك رود موبايل', image: silkroadImg, slug: 'silkroad-mobile', category: 'other' },
 ];
 
 export const mlbbServers = [
@@ -39,14 +42,14 @@ export const mlbbPackages: PackageCategory[] = [
   {
     category: 'Basic Packages',
     packages: [
-      { id: 'basic-86', name: '86 Diamonds', price: 75 },
-      { id: 'basic-172', name: '172 Diamonds', price: 140 },
-      { id: 'basic-600', name: '600 Diamonds', price: 465, popular: true },
-      { id: 'basic-1412', name: '1412 Diamonds', price: 1050 },
-      { id: 'basic-2195', name: '2195 Diamonds', price: 1600 },
-      { id: 'basic-4830', name: '4830 Diamonds', price: 3500 },
-      { id: 'basic-10000', name: '10000 Diamonds', price: 7200 },
-      { id: 'basic-30059', name: '30059 Diamonds', price: 22000 },
+      { id: 'basic-86', name: '86 Diamonds', price: 75, diamonds: 86 },
+      { id: 'basic-172', name: '172 Diamonds', price: 140, diamonds: 172 },
+      { id: 'basic-600', name: '600 Diamonds', price: 465, popular: true, diamonds: 600 },
+      { id: 'basic-1412', name: '1412 Diamonds', price: 1050, diamonds: 1412 },
+      { id: 'basic-2195', name: '2195 Diamonds', price: 1600, diamonds: 2195 },
+      { id: 'basic-4830', name: '4830 Diamonds', price: 3500, diamonds: 4830 },
+      { id: 'basic-10000', name: '10000 Diamonds', price: 7200, diamonds: 10000 },
+      { id: 'basic-30059', name: '30059 Diamonds', price: 22000, diamonds: 30059 },
     ],
   },
   {
@@ -59,8 +62,8 @@ export const mlbbPackages: PackageCategory[] = [
   {
     category: 'Double (First Time)',
     packages: [
-      { id: 'double-50', name: '50+50 Diamonds', price: 50 },
-      { id: 'double-150', name: '150+150 Diamonds', price: 140 },
+      { id: 'double-50', name: '50+50 Diamonds', price: 50, diamonds: 100 },
+      { id: 'double-150', name: '150+150 Diamonds', price: 140, diamonds: 300 },
     ],
   },
   {

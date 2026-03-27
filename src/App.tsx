@@ -3,13 +3,16 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import BottomNav from "@/components/BottomNav";
+import WhatsAppButton from "@/components/WhatsAppButton";
 import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
 import OrdersPage from "./pages/OrdersPage";
 import VipPage from "./pages/VipPage";
 import ProfilePage from "./pages/ProfilePage";
 import AdminPage from "./pages/AdminPage";
+import OwnerPage from "./pages/OwnerPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,9 +38,12 @@ const AppContent = () => {
         <Route path="/vip" element={<VipPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/owner" element={<OwnerPage />} />
+        <Route path="/staff" element={<AdminPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <BottomNav />
+      <WhatsAppButton />
     </>
   );
 };
@@ -47,9 +53,11 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <BrowserRouter>
-        <AuthProvider>
-          <AppContent />
-        </AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <AppContent />
+          </AuthProvider>
+        </LanguageProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
