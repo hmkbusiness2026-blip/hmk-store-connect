@@ -1,11 +1,13 @@
 import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Upload, Check, Loader2, Copy, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Upload, Check, Loader2, Copy, X, LogIn, UserPlus } from 'lucide-react';
 import { mlbbServers, mlbbPackages, admins, type PackageItem } from '@/lib/gameData';
 import { games } from '@/lib/gameData';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useStoreStatus } from '@/hooks/useStoreStatus';
 
 interface CheckoutFlowProps {
   gameId: string;
