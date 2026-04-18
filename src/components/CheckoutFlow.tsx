@@ -28,6 +28,8 @@ const CheckoutFlow = ({ gameId, onClose }: CheckoutFlowProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { status: storeStatus } = useStoreStatus();
 
   const game = games.find(g => g.id === gameId);
 
@@ -72,6 +74,14 @@ const CheckoutFlow = ({ gameId, onClose }: CheckoutFlowProps) => {
       });
 
       if (orderErr) throw orderErr;
+
+      // In-app notification for the user
+      await supabase.from('notifications').insert({
+        user_id: user.id,
+        title: 'Order Received',
+        message: `Your ${selectedPkg.name} order is being reviewed.`,
+        read: false,
+      });
 
       toast({ title: 'Order submitted!', description: 'We\'ll process it shortly.' });
       onClose();
