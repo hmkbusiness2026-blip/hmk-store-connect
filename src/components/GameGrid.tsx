@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react';
 import { games } from '@/lib/gameData';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface GameGridProps {
   onSelectGame: (gameId: string) => void;
@@ -10,6 +12,24 @@ interface GameGridProps {
 
 const GameGrid = ({ onSelectGame, searchQuery = '', category = 'all' }: GameGridProps) => {
   const { lang } = useLanguage();
+  const [overrides, setOverrides] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    (async () => {
+      const keys = games.map(g => `game_img_${g.id}`);
+      const { data } = await supabase
+        .from('site_config')
+        .select('key, value')
+        .in('key', keys);
+      if (!data) return;
+      const map: Record<string, string> = {};
+      data.forEach((row: any) => {
+        const id = row.key.replace('game_img_', '');
+        if (row.value) map[id] = row.value;
+      });
+      setOverrides(map);
+    })();
+  }, []);
 
   const filtered = games.filter((game) => {
     const matchesSearch = searchQuery
@@ -32,14 +52,13 @@ const GameGrid = ({ onSelectGame, searchQuery = '', category = 'all' }: GameGrid
           className="relative overflow-hidden rounded-lg glass-card group active:scale-95 transition-transform"
         >
           <img
-            src={game.image}
+            src={overrides[game.id] || game.image}
             alt={game.name}
             loading="lazy"
             className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
 
-          {/* UID Badge */}
           {game.category === 'uid' && (
             <span className="absolute bottom-8 start-1.5 text-[9px] px-1.5 py-0.5 rounded bg-[#22C55E] text-white font-display font-bold uppercase">
               UID
