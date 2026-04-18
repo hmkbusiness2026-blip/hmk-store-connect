@@ -13,6 +13,7 @@ import VipPage from "./pages/VipPage";
 import ProfilePage from "./pages/ProfilePage";
 import AdminPage from "./pages/AdminPage";
 import OwnerPage from "./pages/OwnerPage";
+import AdminCustomize from "./pages/AdminCustomize";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,18 +29,18 @@ const AppContent = () => {
     );
   }
 
-  if (!user) return <AuthPage />;
-
   return (
     <>
       <Routes>
         <Route path="/" element={<Index />} />
-        <Route path="/orders" element={<OrdersPage />} />
-        <Route path="/vip" element={<VipPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/admin" element={<AdminPage />} />
-        <Route path="/owner" element={<OwnerPage />} />
-        <Route path="/staff" element={<AdminPage />} />
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/orders" element={user ? <OrdersPage /> : <AuthPage />} />
+        <Route path="/vip" element={user ? <VipPage /> : <AuthPage />} />
+        <Route path="/profile" element={user ? <ProfilePage /> : <AuthPage />} />
+        <Route path="/admin" element={user ? <AdminPage /> : <AuthPage />} />
+        <Route path="/admin/customize" element={user ? <AdminCustomize /> : <AuthPage />} />
+        <Route path="/owner" element={user ? <OwnerPage /> : <AuthPage />} />
+        <Route path="/staff" element={user ? <AdminPage /> : <AuthPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <BottomNav />

@@ -1,11 +1,13 @@
 import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Upload, Check, Loader2, Copy, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Upload, Check, Loader2, Copy, X, LogIn, UserPlus } from 'lucide-react';
 import { mlbbServers, mlbbPackages, admins, type PackageItem } from '@/lib/gameData';
 import { games } from '@/lib/gameData';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useStoreStatus } from '@/hooks/useStoreStatus';
 
 interface CheckoutFlowProps {
   gameId: string;
@@ -26,6 +28,8 @@ const CheckoutFlow = ({ gameId, onClose }: CheckoutFlowProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { status: storeStatus } = useStoreStatus();
 
   const game = games.find(g => g.id === gameId);
 
@@ -70,6 +74,14 @@ const CheckoutFlow = ({ gameId, onClose }: CheckoutFlowProps) => {
       });
 
       if (orderErr) throw orderErr;
+
+      // In-app notification for the user
+      await supabase.from('notifications').insert({
+        user_id: user.id,
+        title: 'Order Received',
+        message: `Your ${selectedPkg.name} order is being reviewed.`,
+        read: false,
+      });
 
       toast({ title: 'Order submitted!', description: 'We\'ll process it shortly.' });
       onClose();
@@ -116,6 +128,28 @@ const CheckoutFlow = ({ gameId, onClose }: CheckoutFlowProps) => {
           ))}
         </div>
 
+        {!user ? (
+          <div className="py-8 text-center space-y-4">
+            <div>
+              <h3 className="font-display font-bold text-base text-foreground">Login required</h3>
+              <p className="text-sm text-muted-foreground mt-1">You need to login to complete a purchase</p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => { onClose(); navigate('/auth'); }}
+                className="flex-1 py-2.5 rounded-md font-display font-semibold text-sm bg-primary text-primary-foreground flex items-center justify-center gap-2"
+              >
+                <LogIn size={16} /> Login
+              </button>
+              <button
+                onClick={() => { onClose(); navigate('/auth'); }}
+                className="flex-1 py-2.5 rounded-md font-display font-semibold text-sm glass-card text-foreground flex items-center justify-center gap-2"
+              >
+                <UserPlus size={16} /> Register
+              </button>
+            </div>
+          </div>
+        ) : (
         <AnimatePresence mode="wait">
           {step === 1 && (
             <motion.div key="step1" variants={slideVariants} initial="enter" animate="center" exit="exit" className="space-y-4">
@@ -226,11 +260,30 @@ const CheckoutFlow = ({ gameId, onClose }: CheckoutFlowProps) => {
                 </div>
               </div>
 
+              {/* Store open/closed status pill */}
+              <div
+                className={`flex items-center justify-center gap-2 px-3 py-2 rounded-full text-xs font-display font-semibold ${
+                  storeStatus?.is_open
+                    ? 'bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30'
+                    : 'bg-destructive/15 text-destructive border border-destructive/30'
+                }`}
+              >
+                {storeStatus?.is_open
+                  ? `🟢 Store Open${storeStatus.admin_name ? ` — Transfer to ${storeStatus.admin_name}` : ''}`
+                  : '🔴 Store Closed — We\'ll be back soon'}
+              </div>
+
+              {!storeStatus?.is_open && (
+                <p className="text-xs text-center text-muted-foreground">
+                  Store is currently offline, please check back later
+                </p>
+              )}
+
               {paymentMethod && !assignedAdmin && (
                 <button
                   onClick={handleRequestAdmin}
-                  disabled={loadingAdmin}
-                  className="w-full py-2.5 rounded-md font-display font-semibold text-sm bg-secondary text-secondary-foreground flex items-center justify-center gap-2"
+                  disabled={loadingAdmin || !storeStatus?.is_open}
+                  className="w-full py-2.5 rounded-md font-display font-semibold text-sm bg-secondary text-secondary-foreground flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {loadingAdmin ? <><Loader2 size={16} className="animate-spin" /> Finding admin...</> : 'Request Transfer Number'}
                 </button>
@@ -299,6 +352,7 @@ const CheckoutFlow = ({ gameId, onClose }: CheckoutFlowProps) => {
             </motion.div>
           )}
         </AnimatePresence>
+        )}
       </motion.div>
     </div>
   );

@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          read: boolean
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          read?: boolean
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          read?: boolean
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           admin_name: string | null
@@ -119,6 +146,45 @@ export type Database = {
           platform?: string
           rating?: number
           review_text?: string
+        }
+        Relationships: []
+      }
+      site_config: {
+        Row: {
+          key: string
+          updated_at: string
+          value: string | null
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value?: string | null
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: string | null
+        }
+        Relationships: []
+      }
+      store_status: {
+        Row: {
+          admin_name: string | null
+          id: string
+          is_open: boolean
+          updated_at: string
+        }
+        Insert: {
+          admin_name?: string | null
+          id?: string
+          is_open?: boolean
+          updated_at?: string
+        }
+        Update: {
+          admin_name?: string | null
+          id?: string
+          is_open?: boolean
+          updated_at?: string
         }
         Relationships: []
       }
