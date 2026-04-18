@@ -238,11 +238,30 @@ const CheckoutFlow = ({ gameId, onClose }: CheckoutFlowProps) => {
                 </div>
               </div>
 
+              {/* Store open/closed status pill */}
+              <div
+                className={`flex items-center justify-center gap-2 px-3 py-2 rounded-full text-xs font-display font-semibold ${
+                  storeStatus?.is_open
+                    ? 'bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30'
+                    : 'bg-destructive/15 text-destructive border border-destructive/30'
+                }`}
+              >
+                {storeStatus?.is_open
+                  ? `🟢 Store Open${storeStatus.admin_name ? ` — Transfer to ${storeStatus.admin_name}` : ''}`
+                  : '🔴 Store Closed — We\'ll be back soon'}
+              </div>
+
+              {!storeStatus?.is_open && (
+                <p className="text-xs text-center text-muted-foreground">
+                  Store is currently offline, please check back later
+                </p>
+              )}
+
               {paymentMethod && !assignedAdmin && (
                 <button
                   onClick={handleRequestAdmin}
-                  disabled={loadingAdmin}
-                  className="w-full py-2.5 rounded-md font-display font-semibold text-sm bg-secondary text-secondary-foreground flex items-center justify-center gap-2"
+                  disabled={loadingAdmin || !storeStatus?.is_open}
+                  className="w-full py-2.5 rounded-md font-display font-semibold text-sm bg-secondary text-secondary-foreground flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {loadingAdmin ? <><Loader2 size={16} className="animate-spin" /> Finding admin...</> : 'Request Transfer Number'}
                 </button>
