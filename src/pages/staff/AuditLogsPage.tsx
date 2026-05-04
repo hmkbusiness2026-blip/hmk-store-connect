@@ -41,8 +41,8 @@ const AuditLogsPage = () => {
           </thead>
           <tbody>
             {visible.map(l => (
-              <>
-                <tr key={l.id} onClick={() => setOpen(open === l.id ? null : l.id)} className="border-t border-border cursor-pointer hover:bg-muted/20">
+              <tbody key={l.id}>
+                <tr onClick={() => setOpen(open === l.id ? null : l.id)} className="border-t border-border cursor-pointer hover:bg-muted/20">
                   <td className="p-2 font-mono">{new Date(l.created_at).toLocaleString()}</td>
                   <td className="p-2 font-mono">{l.actor_id?.slice(0, 8) ?? '—'}</td>
                   <td className="p-2"><span className="px-2 py-0.5 rounded bg-primary/15 text-primary">{l.action}</span></td>
@@ -50,7 +50,7 @@ const AuditLogsPage = () => {
                   <td className="p-2 font-mono">{l.entity_id?.slice(0, 8) ?? '—'}</td>
                 </tr>
                 {open === l.id && (
-                  <tr key={`${l.id}-d`} className="bg-muted/20"><td colSpan={5} className="p-3">
+                  <tr className="bg-muted/20"><td colSpan={5} className="p-3">
                     <div className="grid md:grid-cols-2 gap-3">
                       <div>
                         <p className="text-[10px] text-muted-foreground uppercase mb-1">Before</p>
@@ -63,9 +63,9 @@ const AuditLogsPage = () => {
                     </div>
                   </td></tr>
                 )}
-              </>
+              </tbody>
             ))}
-            {visible.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-muted-foreground">No log entries.</td></tr>}
+            {visible.length === 0 && <tbody><tr><td colSpan={5} className="p-6 text-center text-muted-foreground">No log entries.</td></tr></tbody>}
           </tbody>
         </table>
       </div>
