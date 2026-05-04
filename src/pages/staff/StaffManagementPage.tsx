@@ -47,15 +47,14 @@ const StaffManagementPage = () => {
   };
 
   const issueKey = async () => {
-    if (!target) return;
     const { error, data } = await supabase.functions.invoke('verify-cdkey', {
-      body: { op: 'issue', user_id: target, label: cdLabel },
+      body: { op: 'issue', assigned_to: target || null, label: cdLabel },
     });
     if (error || (data as any)?.error) {
       toast({ title: (data as any)?.error ?? 'Failed', variant: 'destructive' });
       return;
     }
-    setIssuedKey((data as any).code);
+    setIssuedKey((data as any).key);
   };
 
   return (
