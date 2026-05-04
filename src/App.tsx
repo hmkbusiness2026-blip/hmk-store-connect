@@ -53,7 +53,18 @@ const AppContent = () => {
         <Route path="/admin" element={user ? <AdminPage /> : <AuthPage />} />
         <Route path="/admin/customize" element={user ? <AdminCustomize /> : <AuthPage />} />
         <Route path="/owner" element={user ? <OwnerPage /> : <AuthPage />} />
-        <Route path="/staff" element={user ? <AdminPage /> : <AuthPage />} />
+        <Route path="/staff" element={<StaffGuard><StaffLayout /></StaffGuard>}>
+          <Route index element={<Navigate to="/staff/dashboard" replace />} />
+          <Route path="dashboard" element={<StaffDashboard />} />
+          <Route path="orders" element={<AdminPage />} />
+          <Route path="inbox" element={<StaffPlaceholder title="Unified Inbox" />} />
+          <Route path="inventory" element={<StaffPlaceholder title="Inventory" />} />
+          <Route path="audit" element={<StaffPlaceholder title="Audit Logs" />} />
+          <Route path="staff" element={<StaffPlaceholder title="Staff Management" />} />
+          <Route path="schedules" element={<StaffPlaceholder title="Schedules" />} />
+          <Route path="customize" element={<AdminCustomize />} />
+          <Route path="shifts" element={<StaffPlaceholder title="Shift Reports" />} />
+        </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
       <BottomNav />
