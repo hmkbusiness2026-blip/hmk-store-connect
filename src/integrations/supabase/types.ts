@@ -14,6 +14,141 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          after: Json | null
+          before: Json | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          ip: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          after?: Json | null
+          before?: Json | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          ip?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          after?: Json | null
+          before?: Json | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          ip?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      handovers: {
+        Row: {
+          acknowledged_at: string | null
+          created_at: string
+          from_user: string
+          id: string
+          notes: string
+          to_user: string | null
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          created_at?: string
+          from_user: string
+          id?: string
+          notes: string
+          to_user?: string | null
+        }
+        Update: {
+          acknowledged_at?: string | null
+          created_at?: string
+          from_user?: string
+          id?: string
+          notes?: string
+          to_user?: string | null
+        }
+        Relationships: []
+      }
+      inventory: {
+        Row: {
+          game_id: string
+          id: string
+          low_threshold: number
+          package_name: string
+          stock: number
+          updated_at: string
+        }
+        Insert: {
+          game_id: string
+          id?: string
+          low_threshold?: number
+          package_name: string
+          stock?: number
+          updated_at?: string
+        }
+        Update: {
+          game_id?: string
+          id?: string
+          low_threshold?: number
+          package_name?: string
+          stock?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          assigned_to: string | null
+          body: string
+          channel: string
+          created_at: string
+          customer_id: string | null
+          direction: string
+          id: string
+          order_id: string | null
+          priority: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          body: string
+          channel?: string
+          created_at?: string
+          customer_id?: string | null
+          direction?: string
+          id?: string
+          order_id?: string | null
+          priority?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          body?: string
+          channel?: string
+          created_at?: string
+          customer_id?: string | null
+          direction?: string
+          id?: string
+          order_id?: string | null
+          priority?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -41,9 +176,37 @@ export type Database = {
         }
         Relationships: []
       }
+      order_notes: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          mentions: string[]
+          order_id: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+          mentions?: string[]
+          order_id: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          mentions?: string[]
+          order_id?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           admin_name: string | null
+          archived_at: string | null
           created_at: string
           game_id: string
           game_name: string
@@ -61,6 +224,7 @@ export type Database = {
         }
         Insert: {
           admin_name?: string | null
+          archived_at?: string | null
           created_at?: string
           game_id: string
           game_name: string
@@ -78,6 +242,7 @@ export type Database = {
         }
         Update: {
           admin_name?: string | null
+          archived_at?: string | null
           created_at?: string
           game_id?: string
           game_name?: string
@@ -121,6 +286,7 @@ export type Database = {
       }
       reviews: {
         Row: {
+          archived_at: string | null
           created_at: string
           created_by: string | null
           customer_name: string
@@ -130,6 +296,7 @@ export type Database = {
           review_text: string
         }
         Insert: {
+          archived_at?: string | null
           created_at?: string
           created_by?: string | null
           customer_name: string
@@ -139,6 +306,7 @@ export type Database = {
           review_text: string
         }
         Update: {
+          archived_at?: string | null
           created_at?: string
           created_by?: string | null
           customer_name?: string
@@ -151,19 +319,130 @@ export type Database = {
       }
       site_config: {
         Row: {
+          archived_at: string | null
           key: string
           updated_at: string
           value: string | null
         }
         Insert: {
+          archived_at?: string | null
           key: string
           updated_at?: string
           value?: string | null
         }
         Update: {
+          archived_at?: string | null
           key?: string
           updated_at?: string
           value?: string | null
+        }
+        Relationships: []
+      }
+      staff_cd_keys: {
+        Row: {
+          archived_at: string | null
+          assigned_to: string | null
+          code_hash: string
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          label: string | null
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          archived_at?: string | null
+          assigned_to?: string | null
+          code_hash: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          label?: string | null
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          archived_at?: string | null
+          assigned_to?: string | null
+          code_hash?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          label?: string | null
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: []
+      }
+      staff_schedules: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          shift_end: string
+          shift_start: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          shift_end: string
+          shift_start: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          shift_end?: string
+          shift_start?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      staff_sessions: {
+        Row: {
+          device_id: string | null
+          elevated_until: string | null
+          ended_at: string | null
+          ended_reason: string | null
+          id: string
+          ip: string | null
+          is_idle: boolean
+          last_ping: string
+          started_at: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          device_id?: string | null
+          elevated_until?: string | null
+          ended_at?: string | null
+          ended_reason?: string | null
+          id?: string
+          ip?: string | null
+          is_idle?: boolean
+          last_ping?: string
+          started_at?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          device_id?: string | null
+          elevated_until?: string | null
+          ended_at?: string | null
+          ended_reason?: string | null
+          id?: string
+          ip?: string | null
+          is_idle?: boolean
+          last_ping?: string
+          started_at?: string
+          user_agent?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -226,9 +505,16 @@ export type Database = {
         Args: { p_phone?: string; p_user_id: string }
         Returns: undefined
       }
+      inventory_adjust: {
+        Args: { p_delta: number; p_game_id: string; p_package: string }
+        Returns: undefined
+      }
+      is_admin_or_owner: { Args: { _user_id: string }; Returns: boolean }
+      is_staff: { Args: { _user_id: string }; Returns: boolean }
+      mark_idle_sessions: { Args: never; Returns: undefined }
     }
     Enums: {
-      app_role: "client" | "admin" | "owner"
+      app_role: "client" | "moderator" | "admin" | "owner"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -356,7 +642,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["client", "admin", "owner"],
+      app_role: ["client", "moderator", "admin", "owner"],
     },
   },
 } as const
