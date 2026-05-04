@@ -505,8 +505,13 @@ export type Database = {
         Args: { p_phone?: string; p_user_id: string }
         Returns: undefined
       }
+      inventory_adjust: {
+        Args: { p_delta: number; p_game_id: string; p_package: string }
+        Returns: undefined
+      }
       is_admin_or_owner: { Args: { _user_id: string }; Returns: boolean }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      mark_idle_sessions: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "client" | "moderator" | "admin" | "owner"
