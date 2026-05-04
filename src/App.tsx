@@ -17,6 +17,7 @@ import AdminCustomize from "./pages/AdminCustomize";
 import NotFound from "./pages/NotFound";
 import StaffLayout from "./pages/staff/StaffLayout";
 import StaffDashboard from "./pages/staff/StaffDashboard";
+import StaffPlaceholder from "./pages/staff/StaffPlaceholder";
 import { usePermissions } from "@/hooks/usePermissions";
 import { Navigate } from "react-router-dom";
 
