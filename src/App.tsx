@@ -15,6 +15,19 @@ import AdminPage from "./pages/AdminPage";
 import OwnerPage from "./pages/OwnerPage";
 import AdminCustomize from "./pages/AdminCustomize";
 import NotFound from "./pages/NotFound";
+import StaffLayout from "./pages/staff/StaffLayout";
+import StaffDashboard from "./pages/staff/StaffDashboard";
+import { usePermissions } from "@/hooks/usePermissions";
+import { Navigate } from "react-router-dom";
+
+const StaffGuard = ({ children }: { children: JSX.Element }) => {
+  const { user, loading } = useAuth();
+  const { isStaff } = usePermissions();
+  if (loading) return null;
+  if (!user) return <Navigate to="/auth" replace />;
+  if (!isStaff) return <Navigate to="/" replace />;
+  return children;
+};
 
 const queryClient = new QueryClient();
 
