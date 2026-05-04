@@ -18,6 +18,12 @@ import NotFound from "./pages/NotFound";
 import StaffLayout from "./pages/staff/StaffLayout";
 import StaffDashboard from "./pages/staff/StaffDashboard";
 import StaffPlaceholder from "./pages/staff/StaffPlaceholder";
+import InboxPage from "./pages/staff/InboxPage";
+import InventoryPage from "./pages/staff/InventoryPage";
+import AuditLogsPage from "./pages/staff/AuditLogsPage";
+import StaffManagementPage from "./pages/staff/StaffManagementPage";
+import SchedulesPage from "./pages/staff/SchedulesPage";
+import ShiftReportsPage from "./pages/staff/ShiftReportsPage";
 import { usePermissions } from "@/hooks/usePermissions";
 import { Navigate } from "react-router-dom";
 
@@ -58,13 +64,13 @@ const AppContent = () => {
           <Route index element={<Navigate to="/staff/dashboard" replace />} />
           <Route path="dashboard" element={<StaffDashboard />} />
           <Route path="orders" element={<AdminPage />} />
-          <Route path="inbox" element={<StaffPlaceholder title="Unified Inbox" />} />
-          <Route path="inventory" element={<StaffPlaceholder title="Inventory" />} />
-          <Route path="audit" element={<StaffPlaceholder title="Audit Logs" />} />
-          <Route path="staff" element={<StaffPlaceholder title="Staff Management" />} />
-          <Route path="schedules" element={<StaffPlaceholder title="Schedules" />} />
+          <Route path="inbox" element={<InboxPage />} />
+          <Route path="inventory" element={<InventoryPage />} />
+          <Route path="audit" element={<AuditLogsPage />} />
+          <Route path="staff" element={<StaffManagementPage />} />
+          <Route path="schedules" element={<SchedulesPage />} />
           <Route path="customize" element={<AdminCustomize />} />
-          <Route path="shifts" element={<StaffPlaceholder title="Shift Reports" />} />
+          <Route path="shifts" element={<ShiftReportsPage />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
