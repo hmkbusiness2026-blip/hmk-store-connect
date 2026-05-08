@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { AnimatePresence } from 'framer-motion';
 import { Globe, Settings } from 'lucide-react';
+import hmkLogo from '@/assets/hmk-logo.png';
 
 const Index = () => {
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
@@ -26,7 +27,10 @@ const Index = () => {
   return (
     <div className="min-h-screen pb-20 px-4 pt-4 space-y-4">
       <header className="flex items-center justify-between">
-        <h1 className="font-display font-bold text-xl gradient-text">{t('storeName')}</h1>
+        <div className="flex items-center gap-2">
+          <img src={hmkLogo} alt="HMK" className="w-10 h-10 object-contain drop-shadow-[0_0_10px_rgba(255,176,0,0.4)]" />
+          <h1 className="font-display font-extrabold text-xl gradient-text tracking-wide">{t('storeName')}</h1>
+        </div>
         <div className="flex items-center gap-2">
           {isAdmin && (
             <Link

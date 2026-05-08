@@ -7,6 +7,7 @@ import { useStaffPresence } from '@/hooks/useStaffPresence';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { motion } from 'framer-motion';
+import hmkLogo from '@/assets/hmk-logo.png';
 
 interface NavItem { to: string; label: string; icon: any; roles?: ('moderator' | 'admin' | 'owner')[]; }
 
@@ -91,9 +92,12 @@ const StaffLayout = () => {
   return (
     <div className="min-h-screen flex bg-background text-foreground">
       <aside className="w-56 border-e border-border bg-card/40 backdrop-blur flex flex-col">
-        <div className="p-4 border-b border-border">
-          <h1 className="font-display font-bold text-sm gradient-text">HMK STAFF</h1>
-          <p className="text-[10px] text-muted-foreground uppercase">{role}</p>
+        <div className="p-4 border-b border-border flex items-center gap-2">
+          <img src={hmkLogo} alt="HMK" className="w-8 h-8 object-contain" />
+          <div>
+            <h1 className="font-display font-bold text-sm gradient-text tracking-wider">HMK STAFF</h1>
+            <p className="text-[10px] text-muted-foreground uppercase">{role}</p>
+          </div>
         </div>
         <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
           {NAV.filter(n => !n.roles || n.roles.includes(role as any)).map(n => (
