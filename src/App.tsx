@@ -26,6 +26,7 @@ import SchedulesPage from "./pages/staff/SchedulesPage";
 import ShiftReportsPage from "./pages/staff/ShiftReportsPage";
 import { usePermissions } from "@/hooks/usePermissions";
 import { Navigate } from "react-router-dom";
+import hmkLogo from "@/assets/hmk-logo.png";
 
 const StaffGuard = ({ children }: { children: JSX.Element }) => {
   const { user, loading } = useAuth();
@@ -43,8 +44,9 @@ const AppContent = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="font-display font-bold text-xl gradient-text animate-pulse">HMK STORE</div>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3">
+        <img src={hmkLogo} alt="HMK Store" className="w-24 h-24 object-contain animate-pulse drop-shadow-[0_0_18px_rgba(255,176,0,0.45)]" />
+        <div className="font-display font-bold text-xl gradient-text tracking-widest">HMK STORE</div>
       </div>
     );
   }

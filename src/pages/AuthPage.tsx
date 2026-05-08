@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Loader2, Phone, Lock, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import hmkLogo from '@/assets/hmk-logo.png';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -40,9 +41,10 @@ const AuthPage = () => {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-sm glass-card p-6 space-y-6"
       >
-        <div className="text-center">
-          <h1 className="font-display font-bold text-2xl gradient-text">{t('storeName')}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+        <div className="text-center flex flex-col items-center gap-2">
+          <img src={hmkLogo} alt="HMK Store" className="w-24 h-24 object-contain drop-shadow-[0_0_22px_rgba(255,176,0,0.5)]" />
+          <h1 className="font-display font-extrabold text-2xl gradient-text tracking-widest">{t('storeName')}</h1>
+          <p className="text-sm text-muted-foreground">
             {isStaffMode ? (lang === 'ar' ? 'تسجيل دخول الإدارة / المالك' : 'Admin / Owner Login') : (isLogin ? t('signIn') : t('signUp'))}
           </p>
         </div>
