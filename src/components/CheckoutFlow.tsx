@@ -355,7 +355,7 @@ const CheckoutFlow = ({ gameId, onClose }: CheckoutFlowProps) => {
             </motion.div>
           )}
         </AnimatePresence>
-        )}
+
       </motion.div>
     </div>
   );
