@@ -12,7 +12,7 @@ import NotificationBell from '@/components/NotificationBell';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { AnimatePresence } from 'framer-motion';
-import { Globe, Settings } from 'lucide-react';
+import { Globe, Settings, User as UserIcon } from 'lucide-react';
 import hmkLogo from '@/assets/hmk-logo.png';
 
 const Index = () => {
