@@ -28,9 +28,9 @@ export interface PackageCategory {
 
 export const games: Game[] = [
   { id: 'mlbb', name: 'Mobile Legends', nameAr: 'موبايل ليجندز', image: mlbbImg, slug: 'mobile-legends', category: 'uid' },
+  { id: 'hok', name: 'Honor of Kings', nameAr: 'هونر أوف كينجز', image: hokImg, slug: 'honor-of-kings', category: 'other' },
   { id: 'pubg', name: 'PUBG Mobile', nameAr: 'ببجي موبايل', image: pubgImg, slug: 'pubg-mobile', category: 'uid' },
   { id: 'genshin', name: 'Genshin Impact', nameAr: 'جنشن إمباكت', image: genshinImg, slug: 'genshin-impact', category: 'login' },
-  { id: 'hok', name: 'Honor of Kings', nameAr: 'هونر أوف كينجز', image: hokImg, slug: 'honor-of-kings', category: 'other' },
   { id: 'silkroad', name: 'Silkroad Mobile', nameAr: 'سيلك رود موبايل', image: silkroadImg, slug: 'silkroad-mobile', category: 'other' },
 ];
 
