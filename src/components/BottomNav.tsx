@@ -1,18 +1,21 @@
 import { Home, ShoppingBag, Crown, User } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const BottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useLanguage();
+  const { user } = useAuth();
 
   const navItems = [
     { icon: Home, label: t('home'), path: '/' },
     { icon: ShoppingBag, label: t('orders'), path: '/orders' },
-    { icon: Crown, label: t('vip'), path: '/vip' },
+    ...(user ? [{ icon: Crown, label: t('vip'), path: '/vip' }] : []),
     { icon: User, label: t('profile'), path: '/profile' },
   ];
+
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 glass border-t border-border">
