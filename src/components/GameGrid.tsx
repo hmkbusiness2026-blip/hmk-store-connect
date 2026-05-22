@@ -41,37 +41,35 @@ const GameGrid = ({ onSelectGame, searchQuery = '', category = 'all' }: GameGrid
   });
 
   return (
-    <div className="grid grid-cols-3 gap-2.5">
+    <div id="games-grid" className="grid grid-cols-2 sm:grid-cols-3 gap-3">
       {filtered.map((game, i) => (
         <motion.button
           key={game.id}
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.06 }}
+          transition={{ delay: i * 0.05 }}
           onClick={() => onSelectGame(game.id)}
-          className="relative overflow-hidden rounded-lg glass-card group active:scale-95 transition-transform"
+          className="relative overflow-hidden rounded-2xl border border-white/5 bg-card/40 backdrop-blur-md shadow-[0_8px_24px_-12px_rgba(0,0,0,0.6)] active:scale-[0.97] hover:border-primary/40 hover:shadow-[0_0_24px_-6px_hsl(var(--primary)/0.4)] transition-all group"
         >
           <img
             src={overrides[game.id] || game.image}
             alt={game.name}
             loading="lazy"
-            className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/20 to-transparent" />
 
           {game.category === 'uid' && (
-            <span className="absolute bottom-8 start-1.5 text-[9px] px-1.5 py-0.5 rounded bg-[#22C55E] text-white font-display font-bold uppercase">
+            <span className="absolute top-2 start-2 text-[9px] px-1.5 py-0.5 rounded-md bg-primary/90 text-primary-foreground font-display font-bold uppercase tracking-wide">
               UID
             </span>
           )}
 
-          <div className="absolute bottom-0 start-0 end-0 p-2">
-            <h3 className="font-display font-bold text-[11px] text-foreground truncate">
+          <div className="absolute bottom-0 start-0 end-0 p-2.5">
+            <h3 className="font-display font-bold text-xs text-foreground truncate">
               {lang === 'ar' ? game.nameAr : game.name}
             </h3>
           </div>
-
-          <div className="absolute top-1.5 end-1.5 w-2 h-2 rounded-full bg-primary animate-pulse-glow" />
         </motion.button>
       ))}
     </div>
