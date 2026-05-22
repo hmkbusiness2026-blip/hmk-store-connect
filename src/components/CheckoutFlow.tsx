@@ -128,29 +128,8 @@ const CheckoutFlow = ({ gameId, onClose }: CheckoutFlowProps) => {
           ))}
         </div>
 
-        {!user ? (
-          <div className="py-8 text-center space-y-4">
-            <div>
-              <h3 className="font-display font-bold text-base text-foreground">Login required</h3>
-              <p className="text-sm text-muted-foreground mt-1">You need to login to complete a purchase</p>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => { onClose(); navigate('/auth'); }}
-                className="flex-1 py-2.5 rounded-md font-display font-semibold text-sm bg-primary text-primary-foreground flex items-center justify-center gap-2"
-              >
-                <LogIn size={16} /> Login
-              </button>
-              <button
-                onClick={() => { onClose(); navigate('/auth'); }}
-                className="flex-1 py-2.5 rounded-md font-display font-semibold text-sm glass-card text-foreground flex items-center justify-center gap-2"
-              >
-                <UserPlus size={16} /> Register
-              </button>
-            </div>
-          </div>
-        ) : (
         <AnimatePresence mode="wait">
+
           {step === 1 && (
             <motion.div key="step1" variants={slideVariants} initial="enter" animate="center" exit="exit" className="space-y-4">
               <div>
