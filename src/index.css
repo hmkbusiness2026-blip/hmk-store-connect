@@ -68,7 +68,7 @@
 
   body {
     @apply bg-background text-foreground font-body antialiased;
-    background-color: #07070f;
+    background-color: #121212;
   }
 }
 
