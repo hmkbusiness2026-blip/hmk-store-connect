@@ -56,7 +56,7 @@ const Index = () => {
               aria-label="Profile"
               className="w-10 h-10 rounded-full bg-muted border-2 border-primary/40 hover:border-primary transition-colors flex items-center justify-center text-foreground font-display font-bold overflow-hidden"
             >
-              {user ? (user.email?.charAt(0).toUpperCase() ?? 'U') : <User size={16} />}
+              {user ? (user.email?.charAt(0).toUpperCase() ?? 'U') : <UserIcon size={16} />}
             </Link>
           </div>
         </div>
