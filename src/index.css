@@ -6,14 +6,14 @@
 
 @layer base {
   :root {
-    /* HMK Brand — fire gold + diamond blue on deep navy */
-    --background: 240 30% 5%;
+    /* HMK Brand — fire gold + diamond blue on rich dark */
+    --background: 0 0% 7%;
     --foreground: 40 30% 96%;
 
-    --card: 240 30% 8%;
+    --card: 0 0% 10%;
     --card-foreground: 40 30% 96%;
 
-    --popover: 240 30% 8%;
+    --popover: 0 0% 10%;
     --popover-foreground: 40 30% 96%;
 
     /* Primary = Fire Gold #FFB000 */
