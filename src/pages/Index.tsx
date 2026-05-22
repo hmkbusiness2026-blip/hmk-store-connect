@@ -25,39 +25,44 @@ const Index = () => {
   const isAdmin = userRole === 'admin' || userRole === 'owner';
 
   return (
-    <div className="min-h-screen pb-20 px-4 pt-4 space-y-4">
-      <header className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <img src={hmkLogo} alt="HMK" className="w-10 h-10 object-contain drop-shadow-[0_0_10px_rgba(255,176,0,0.4)]" />
-          <h1 className="font-display font-extrabold text-xl gradient-text tracking-wide">{t('storeName')}</h1>
-        </div>
-        <div className="flex items-center gap-2">
-          {isAdmin && (
-            <Link
-              to="/admin/customize"
-              className="flex items-center gap-1 px-2 py-1 rounded-full glass-card text-xs text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Customize Site"
+    <div className="min-h-screen pb-24">
+      <header className="sticky top-0 z-40 glass border-b border-border/60 px-5 py-3">
+        <div className="flex items-center justify-between max-w-lg mx-auto">
+          <div className="flex items-center gap-2">
+            <img src={hmkLogo} alt="HMK" className="w-9 h-9 object-contain drop-shadow-[0_0_10px_rgba(255,176,0,0.4)]" />
+            <h1 className="font-display font-extrabold text-lg gradient-text tracking-wide">{t('storeName')}</h1>
+          </div>
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Link
+                to="/admin/customize"
+                className="p-2 rounded-full glass-card text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Customize Site"
+              >
+                <Settings size={14} />
+              </Link>
+            )}
+            <NotificationBell />
+            <button
+              onClick={toggleLang}
+              aria-label="Language"
+              className="flex items-center gap-1 px-2 py-1.5 rounded-full glass-card text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Settings size={12} />
-              <span className="hidden sm:inline">Customize</span>
+              <Globe size={12} />
+              {lang === 'ar' ? 'EN' : 'عربي'}
+            </button>
+            <Link
+              to={user ? '/profile' : '/auth'}
+              aria-label="Profile"
+              className="w-10 h-10 rounded-full bg-muted border-2 border-primary/40 hover:border-primary transition-colors flex items-center justify-center text-foreground font-display font-bold overflow-hidden"
+            >
+              {user ? (user.email?.charAt(0).toUpperCase() ?? 'U') : <User size={16} />}
             </Link>
-          )}
-          <NotificationBell />
-          <button
-            onClick={toggleLang}
-            className="flex items-center gap-1 px-2 py-1 rounded-full glass-card text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <Globe size={12} />
-            {lang === 'ar' ? 'EN' : 'عربي'}
-          </button>
-          {user && (
-            <span className="text-xs text-muted-foreground font-mono hidden sm:inline">
-              {user.email?.replace('@hmkstore.com', '')}
-            </span>
-          )}
+          </div>
         </div>
       </header>
 
+      <div className="px-5 pt-4 space-y-5 max-w-lg mx-auto">
       <PromoBanner />
 
       <SearchBar value={searchQuery} onChange={setSearchQuery} />
@@ -75,6 +80,7 @@ const Index = () => {
       <SocialLinks />
 
       <AppFooter />
+      </div>
 
       <AnimatePresence>
         {selectedGame && (
