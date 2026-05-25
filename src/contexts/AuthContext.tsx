@@ -129,7 +129,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const phoneNumber = user?.email?.replace('@hmkstore.com', '') || user?.phone || null;
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, userRole, phoneNumber, totalDiamonds, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, userRole, phoneNumber, totalDiamonds, favoriteGame, setFavoriteGame, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
