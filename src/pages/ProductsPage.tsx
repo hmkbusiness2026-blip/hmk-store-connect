@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Minus, Plus, Gem, LogIn } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Minus, Plus, Gem, LogIn, Clock } from 'lucide-react';
 import { games, arabicServers, mlbbPackages, type PackageItem } from '@/lib/gameData';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useStoreOnDuty } from '@/hooks/useStoreOnDuty';
 
 interface CartItem extends PackageItem {
   qty: number;
@@ -14,6 +15,7 @@ const ProductsPage = () => {
   const navigate = useNavigate();
   const { lang } = useLanguage();
   const { user } = useAuth();
+  const { onDuty } = useStoreOnDuty();
   const game = games.find((g) => g.id === gameId);
   const server = arabicServers.find((s) => s.id === serverId);
 
@@ -52,7 +54,7 @@ const ProductsPage = () => {
     });
   };
 
-  const canCheckout = totalItems > 0 && playerId.trim().length > 0 && serverNum.trim().length > 0;
+  const canCheckout = totalItems > 0 && playerId.trim().length > 0 && serverNum.trim().length > 0 && onDuty === true;
 
   const handleCheckout = () => {
     if (!canCheckout || !game || !server) return;
@@ -174,6 +176,20 @@ const ProductsPage = () => {
           </div>
         </div>
 
+        {onDuty === false && (
+          <div className="glass-card p-4 rounded-2xl border border-destructive/40 flex items-start gap-3">
+            <Clock className="text-destructive shrink-0 mt-0.5" size={20} />
+            <div className="space-y-1">
+              <p className="font-display font-extrabold text-sm text-destructive">
+                {lang === 'ar' ? 'نحن خارج أوقات العمل حالياً' : 'We are currently off-duty'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {lang === 'ar' ? 'مواعيد العمل: 10 صباحاً - 2 منتصف الليل' : 'Working hours: 10 AM – 2 AM'}
+              </p>
+            </div>
+          </div>
+        )}
+
         {user ? (
           <>
             {/* Player info form */}
@@ -187,8 +203,9 @@ const ProductsPage = () => {
                   inputMode="numeric"
                   placeholder="123456780"
                   value={playerId}
+                  disabled={onDuty === false}
                   onChange={(e) => setPlayerId(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-md bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full px-3 py-2.5 rounded-md bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
               <div>
@@ -200,19 +217,22 @@ const ProductsPage = () => {
                   inputMode="numeric"
                   placeholder="1234"
                   value={serverNum}
+                  disabled={onDuty === false}
                   onChange={(e) => setServerNum(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-md bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full px-3 py-2.5 rounded-md bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
 
-            <button
-              disabled={!canCheckout}
-              onClick={handleCheckout}
-              className="w-full py-3.5 rounded-2xl font-display font-extrabold text-base bg-primary text-primary-foreground shadow-[0_8px_24px_-8px_hsl(var(--primary)/0.6)] disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-transform"
-            >
-              {lang === 'ar' ? 'متابعة' : 'Continue'}
-            </button>
+            {onDuty !== false && (
+              <button
+                disabled={!canCheckout}
+                onClick={handleCheckout}
+                className="w-full py-3.5 rounded-2xl font-display font-extrabold text-base bg-primary text-primary-foreground shadow-[0_8px_24px_-8px_hsl(var(--primary)/0.6)] disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-transform"
+              >
+                {lang === 'ar' ? 'متابعة' : 'Continue'}
+              </button>
+            )}
           </>
         ) : (
           <button
@@ -225,8 +245,8 @@ const ProductsPage = () => {
         )}
       </div>
 
-      {/* Sticky bottom total (always visible when items selected) */}
-      {totalItems > 0 && (
+      {/* Sticky bottom total (hidden when off-duty) */}
+      {totalItems > 0 && onDuty !== false && (
         <div className="fixed bottom-0 inset-x-0 z-30 glass border-t border-border/60 px-5 py-3">
           <div className="max-w-lg mx-auto flex items-center justify-between gap-3">
             <div className="text-end">

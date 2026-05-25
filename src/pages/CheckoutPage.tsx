@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Check, Copy, Loader2, Upload, Wallet, Smartphone } from 'lucide-react';
-import { admins } from '@/lib/gameData';
+import { ArrowLeft, ArrowRight, Check, Clock, Copy, Loader2, Upload, Wallet, Smartphone } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useStoreOnDuty } from '@/hooks/useStoreOnDuty';
 
 interface CartItem {
   id: string;
@@ -32,10 +32,11 @@ const CheckoutPage = () => {
   const { user } = useAuth();
   const { lang } = useLanguage();
   const { toast } = useToast();
+  const { onDuty, activeAdmin } = useStoreOnDuty();
   const state = location.state as CheckoutState | null;
 
   const [method, setMethod] = useState<'wallet' | 'instapay' | ''>('');
-  const [assignedAdmin, setAssignedAdmin] = useState<typeof admins[0] | null>(null);
+  const [revealed, setRevealed] = useState(false);
   const [loadingAdmin, setLoadingAdmin] = useState(false);
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [last3, setLast3] = useState('');
@@ -48,21 +49,24 @@ const CheckoutPage = () => {
 
   if (!state) return null;
 
+  const transferNumber = method === 'wallet' ? activeAdmin?.vodafone_cash : activeAdmin?.instapay_id;
+  const adminName = activeAdmin?.full_name || (lang === 'ar' ? 'الادمن المناوب' : 'On-Duty Admin');
+
   const requestTransfer = async () => {
     setLoadingAdmin(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    setAssignedAdmin(admins[Math.floor(Math.random() * admins.length)]);
+    await new Promise((r) => setTimeout(r, 800));
+    setRevealed(true);
     setLoadingAdmin(false);
   };
 
-  const canSubmit = !!assignedAdmin && !!receiptFile && last3.trim().length === 3 && !submitting;
+  const canSubmit = revealed && !!transferNumber && !!receiptFile && last3.trim().length === 3 && !submitting && onDuty === true;
 
   const handleSubmit = async () => {
     if (!user) {
       navigate('/auth');
       return;
     }
-    if (!canSubmit || !receiptFile || !assignedAdmin) return;
+    if (!canSubmit || !receiptFile || !transferNumber) return;
     setSubmitting(true);
     try {
       const fileExt = receiptFile.name.split('.').pop();
@@ -82,7 +86,7 @@ const CheckoutPage = () => {
         package_name: `${item.name} × ${item.qty}`,
         price: item.price * item.qty,
         payment_method: method,
-        admin_name: assignedAdmin.name,
+        admin_name: adminName,
         receipt_url: fileName,
         status: 'pending',
       }));
@@ -123,6 +127,20 @@ const CheckoutPage = () => {
       </header>
 
       <div className="px-5 pt-4 space-y-5 max-w-lg mx-auto">
+        {onDuty === false && (
+          <div className="glass-card p-4 rounded-2xl border border-destructive/40 flex items-start gap-3">
+            <Clock className="text-destructive shrink-0 mt-0.5" size={20} />
+            <div className="space-y-1">
+              <p className="font-display font-extrabold text-sm text-destructive">
+                {lang === 'ar' ? 'نحن خارج أوقات العمل حالياً' : 'We are currently off-duty'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {lang === 'ar' ? 'مواعيد العمل: 10 صباحاً - 2 منتصف الليل' : 'Working hours: 10 AM – 2 AM'}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Order Summary */}
         <div className="glass-card p-4 rounded-2xl space-y-3">
           <h2 className="font-display font-extrabold text-sm text-foreground">
@@ -171,7 +189,7 @@ const CheckoutPage = () => {
               return (
                 <button
                   key={m.id}
-                  onClick={() => { setMethod(m.id); setAssignedAdmin(null); }}
+                  onClick={() => { setMethod(m.id); setRevealed(false); }}
                   className={`flex items-center justify-center gap-2 py-3 rounded-xl border transition-all ${
                     active
                       ? 'border-primary bg-primary/15 text-primary shadow-[0_0_18px_-6px_hsl(var(--primary)/0.6)]'
@@ -187,10 +205,10 @@ const CheckoutPage = () => {
         </div>
 
         {/* Dynamic transfer flow */}
-        {method && !assignedAdmin && (
+        {method && !revealed && onDuty !== false && (
           <button
             onClick={requestTransfer}
-            disabled={loadingAdmin}
+            disabled={loadingAdmin || !transferNumber}
             className="w-full py-3 rounded-full font-display font-bold text-sm bg-secondary text-secondary-foreground flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {loadingAdmin ? (
@@ -201,17 +219,17 @@ const CheckoutPage = () => {
           </button>
         )}
 
-        {assignedAdmin && (
+        {revealed && transferNumber && (
           <div className="glass-card p-4 rounded-2xl space-y-2">
             <p className="text-xs font-display uppercase tracking-wider text-muted-foreground">
               {lang === 'ar' ? 'رقم ادمن المناوب' : 'On-Duty Admin Number'}
             </p>
-            <p className="font-display font-bold text-foreground">{assignedAdmin.name}</p>
+            <p className="font-display font-bold text-foreground">{adminName}</p>
             <div className="flex items-center gap-2">
-              <p className="text-primary font-mono text-base">{assignedAdmin.transferNumber}</p>
+              <p className="text-primary font-mono text-base">{transferNumber}</p>
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText(assignedAdmin.transferNumber);
+                  navigator.clipboard.writeText(transferNumber);
                   toast({ title: lang === 'ar' ? 'تم النسخ' : 'Copied!' });
                 }}
                 className="text-muted-foreground hover:text-primary"
@@ -222,7 +240,7 @@ const CheckoutPage = () => {
           </div>
         )}
 
-        {assignedAdmin && (
+        {revealed && transferNumber && (
           <>
             <div>
               <label className="text-xs font-display font-bold uppercase tracking-wider text-muted-foreground mb-2 block">
