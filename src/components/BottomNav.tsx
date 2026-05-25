@@ -39,40 +39,64 @@ const BottomNav = () => {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-50">
+      <nav className="fixed bottom-0 left-0 right-0 z-40">
         <div className="relative max-w-lg mx-auto">
-          <button
-            onClick={handleFavorite}
-            aria-label={lang === 'ar' ? 'اللعبة المفضلة' : 'Favorite Game'}
-            className="absolute left-1/2 -translate-x-1/2 -top-7 w-16 h-16 rounded-full bg-primary text-primary-foreground flex flex-col items-center justify-center shadow-[0_8px_28px_hsl(var(--primary)/0.55)] active:scale-95 transition-transform border-4 border-background"
+          {/* Floating center button */}
+          <div
+            className="absolute left-1/2 z-50 flex flex-col items-center pointer-events-none"
+            style={{ transform: 'translateX(-50%)', top: '-30px' }}
           >
-            <Star size={22} strokeWidth={2.5} className="fill-current" />
-          </button>
+            <button
+              onClick={handleFavorite}
+              aria-label={lang === 'ar' ? 'اللعبة المفضلة' : 'Favorite Game'}
+              className="pointer-events-auto w-[60px] h-[60px] rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-[0_8px_28px_hsl(var(--primary)/0.55)] active:scale-95 transition-transform overflow-hidden"
+              style={{ border: '4px solid hsl(var(--background))' }}
+            >
+              {favoriteGameData ? (
+                <img
+                  src={favoriteGameData.image}
+                  alt={favoriteGameData.name}
+                  style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }}
+                />
+              ) : (
+                <Star size={22} strokeWidth={2.5} className="fill-current" />
+              )}
+            </button>
+          </div>
 
           <div className="glass border-t border-border h-16 flex items-stretch">
-            <NavBtn
-              icon={items[0].icon}
-              label={items[0].label}
-              active={location.pathname === '/'}
-              onClick={() => navigate('/')}
-            />
-            <div className="w-16 flex items-end justify-center pb-1">
+            {/* Right group (RTL) / left group (LTR): Home */}
+            <div className="flex-1 flex justify-end">
+              <NavBtn
+                icon={items[0].icon}
+                label={items[0].label}
+                active={location.pathname === '/'}
+                onClick={() => navigate('/')}
+              />
+            </div>
+
+            {/* Center spacer with label */}
+            <div className="w-20 flex items-end justify-center pb-1 shrink-0">
               <span className="text-[10px] font-display font-semibold tracking-wide text-muted-foreground">
                 {lang === 'ar' ? 'لعبتي' : 'Game'}
               </span>
             </div>
-            <NavBtn
-              icon={items[1].icon}
-              label={items[1].label}
-              active={location.pathname === '/orders'}
-              onClick={() => navigate('/orders')}
-            />
-            <NavBtn
-              icon={items[2].icon}
-              label={items[2].label}
-              active={location.pathname === '/profile'}
-              onClick={() => navigate('/profile')}
-            />
+
+            {/* Left group: Orders + Profile */}
+            <div className="flex-1 flex justify-start">
+              <NavBtn
+                icon={items[1].icon}
+                label={items[1].label}
+                active={location.pathname === '/orders'}
+                onClick={() => navigate('/orders')}
+              />
+              <NavBtn
+                icon={items[2].icon}
+                label={items[2].label}
+                active={location.pathname === '/profile'}
+                onClick={() => navigate('/profile')}
+              />
+            </div>
           </div>
         </div>
       </nav>
