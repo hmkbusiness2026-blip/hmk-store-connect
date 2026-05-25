@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Minus, Plus, Gem, LogIn } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Minus, Plus, Gem, LogIn, Clock } from 'lucide-react';
 import { games, arabicServers, mlbbPackages, type PackageItem } from '@/lib/gameData';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useStoreOnDuty } from '@/hooks/useStoreOnDuty';
 
 interface CartItem extends PackageItem {
   qty: number;
@@ -14,6 +15,7 @@ const ProductsPage = () => {
   const navigate = useNavigate();
   const { lang } = useLanguage();
   const { user } = useAuth();
+  const { onDuty } = useStoreOnDuty();
   const game = games.find((g) => g.id === gameId);
   const server = arabicServers.find((s) => s.id === serverId);
 
@@ -52,7 +54,7 @@ const ProductsPage = () => {
     });
   };
 
-  const canCheckout = totalItems > 0 && playerId.trim().length > 0 && serverNum.trim().length > 0;
+  const canCheckout = totalItems > 0 && playerId.trim().length > 0 && serverNum.trim().length > 0 && onDuty === true;
 
   const handleCheckout = () => {
     if (!canCheckout || !game || !server) return;
