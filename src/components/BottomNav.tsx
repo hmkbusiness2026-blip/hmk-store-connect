@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import FavoriteGameModal from './FavoriteGameModal';
+import { games } from '@/lib/gameData';
 
 const BottomNav = () => {
   const navigate = useNavigate();
