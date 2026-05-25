@@ -14,6 +14,105 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          instapay_id: string | null
+          updated_at: string
+          user_id: string
+          vault_key_hash: string | null
+          vodafone_cash: string | null
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          instapay_id?: string | null
+          updated_at?: string
+          user_id: string
+          vault_key_hash?: string | null
+          vodafone_cash?: string | null
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          instapay_id?: string | null
+          updated_at?: string
+          user_id?: string
+          vault_key_hash?: string | null
+          vodafone_cash?: string | null
+        }
+        Relationships: []
+      }
+      admin_shifts: {
+        Row: {
+          admin_id: string
+          closed_at: string | null
+          closed_reason: string | null
+          created_at: string
+          end_instapay: number | null
+          end_instapay_note: string | null
+          end_smile: number | null
+          end_smile_note: string | null
+          end_wallet: number | null
+          end_wallet_note: string | null
+          id: string
+          opened_at: string
+          start_instapay: number | null
+          start_instapay_note: string | null
+          start_smile: number | null
+          start_smile_note: string | null
+          start_wallet: number | null
+          start_wallet_note: string | null
+          status: string
+        }
+        Insert: {
+          admin_id: string
+          closed_at?: string | null
+          closed_reason?: string | null
+          created_at?: string
+          end_instapay?: number | null
+          end_instapay_note?: string | null
+          end_smile?: number | null
+          end_smile_note?: string | null
+          end_wallet?: number | null
+          end_wallet_note?: string | null
+          id?: string
+          opened_at?: string
+          start_instapay?: number | null
+          start_instapay_note?: string | null
+          start_smile?: number | null
+          start_smile_note?: string | null
+          start_wallet?: number | null
+          start_wallet_note?: string | null
+          status?: string
+        }
+        Update: {
+          admin_id?: string
+          closed_at?: string | null
+          closed_reason?: string | null
+          created_at?: string
+          end_instapay?: number | null
+          end_instapay_note?: string | null
+          end_smile?: number | null
+          end_smile_note?: string | null
+          end_wallet?: number | null
+          end_wallet_note?: string | null
+          id?: string
+          opened_at?: string
+          start_instapay?: number | null
+          start_instapay_note?: string | null
+          start_smile?: number | null
+          start_smile_note?: string | null
+          start_wallet?: number | null
+          start_wallet_note?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -326,6 +425,44 @@ export type Database = {
         }
         Relationships: []
       }
+      shift_handovers: {
+        Row: {
+          created_at: string
+          from_admin: string
+          id: string
+          responded_at: string | null
+          shift_id: string
+          status: string
+          to_admin: string
+        }
+        Insert: {
+          created_at?: string
+          from_admin: string
+          id?: string
+          responded_at?: string | null
+          shift_id: string
+          status?: string
+          to_admin: string
+        }
+        Update: {
+          created_at?: string
+          from_admin?: string
+          id?: string
+          responded_at?: string | null
+          shift_id?: string
+          status?: string
+          to_admin?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_handovers_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "admin_shifts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_config: {
         Row: {
           archived_at: string | null
@@ -499,9 +636,44 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _hash_vault: { Args: { _key: string }; Returns: string }
+      accept_handover: {
+        Args: {
+          _handover_id: string
+          _start_instapay: number
+          _start_instapay_note: string
+          _start_smile: number
+          _start_smile_note: string
+          _start_wallet: number
+          _start_wallet_note: string
+          _vault_key: string
+        }
+        Returns: string
+      }
       add_diamonds: {
         Args: { p_diamonds: number; p_user_id: string }
         Returns: undefined
+      }
+      close_shift: {
+        Args: {
+          _end_instapay: number
+          _end_instapay_note: string
+          _end_smile: number
+          _end_smile_note: string
+          _end_wallet: number
+          _end_wallet_note: string
+          _vault_key: string
+        }
+        Returns: string
+      }
+      get_active_admin: {
+        Args: never
+        Returns: {
+          admin_id: string
+          full_name: string
+          instapay_id: string
+          vodafone_cash: string
+        }[]
       }
       has_role: {
         Args: {
@@ -520,7 +692,53 @@ export type Database = {
       }
       is_admin_or_owner: { Args: { _user_id: string }; Returns: boolean }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      is_store_on_duty: { Args: never; Returns: boolean }
+      list_admins: {
+        Args: never
+        Returns: {
+          full_name: string
+          user_id: string
+        }[]
+      }
       mark_idle_sessions: { Args: never; Returns: undefined }
+      open_shift: {
+        Args: {
+          _start_instapay: number
+          _start_instapay_note: string
+          _start_smile: number
+          _start_smile_note: string
+          _start_wallet: number
+          _start_wallet_note: string
+          _vault_key: string
+        }
+        Returns: string
+      }
+      reject_handover: {
+        Args: { _handover_id: string; _vault_key: string }
+        Returns: undefined
+      }
+      request_handover: {
+        Args: {
+          _end_instapay: number
+          _end_instapay_note: string
+          _end_smile: number
+          _end_smile_note: string
+          _end_wallet: number
+          _end_wallet_note: string
+          _to_admin: string
+          _vault_key: string
+        }
+        Returns: string
+      }
+      set_vault_key: { Args: { _key: string }; Returns: undefined }
+      update_admin_profile: {
+        Args: { _full_name: string; _instapay: string; _vodafone: string }
+        Returns: undefined
+      }
+      verify_vault_key: {
+        Args: { _key: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "client" | "moderator" | "admin" | "owner"
