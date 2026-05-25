@@ -189,7 +189,7 @@ const CheckoutPage = () => {
               return (
                 <button
                   key={m.id}
-                  onClick={() => { setMethod(m.id); setAssignedAdmin(null); }}
+                  onClick={() => { setMethod(m.id); setRevealed(false); }}
                   className={`flex items-center justify-center gap-2 py-3 rounded-xl border transition-all ${
                     active
                       ? 'border-primary bg-primary/15 text-primary shadow-[0_0_18px_-6px_hsl(var(--primary)/0.6)]'
