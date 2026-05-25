@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import PromoBanner from '@/components/PromoBanner';
 import GameGrid from '@/components/GameGrid';
 import CheckoutFlow from '@/components/CheckoutFlow';
@@ -23,10 +23,11 @@ const Index = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, userRole, favoriteGame, setFavoriteGame, loading } = useAuth();
   const { t, lang, toggleLang } = useLanguage();
+  const navigate = useNavigate();
 
   const isAdmin = userRole === 'admin' || userRole === 'owner';
 
-  // Open checkout via ?game= deep link (used by the favorite-game floating button)
+  // Legacy: favorite-game floating button still uses the inline checkout modal.
   useEffect(() => {
     const g = searchParams.get('game');
     if (g) {
@@ -36,7 +37,6 @@ const Index = () => {
     }
   }, [searchParams, setSearchParams]);
 
-  // Onboarding: prompt logged-in users who haven't picked a favorite game yet
   const showOnboarding = !!user && !loading && favoriteGame === null;
 
   return (
@@ -87,7 +87,7 @@ const Index = () => {
         <h2 className="font-display font-semibold text-sm uppercase tracking-wider text-muted-foreground mb-3">
           {t('topUpGames')}
         </h2>
-        <GameGrid onSelectGame={(id) => setSelectedGame(id)} searchQuery={searchQuery} category={category} />
+        <GameGrid onSelectGame={(id) => navigate(`/game/${id}`)} searchQuery={searchQuery} category={category} />
       </div>
 
       <ReviewsCarousel />

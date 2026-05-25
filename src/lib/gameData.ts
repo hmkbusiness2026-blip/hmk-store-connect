@@ -1,8 +1,5 @@
 import mlbbImg from '@/assets/game-mlbb.jpg';
-import pubgImg from '@/assets/game-pubg.jpg';
-import genshinImg from '@/assets/game-genshin.jpg';
 import hokImg from '@/assets/game-hok.jpg';
-import silkroadImg from '@/assets/game-silkroad.jpg';
 
 export interface Game {
   id: string;
@@ -27,11 +24,24 @@ export interface PackageCategory {
 }
 
 export const games: Game[] = [
-  { id: 'mlbb', name: 'Mobile Legends', nameAr: 'موبايل ليجندز', image: mlbbImg, slug: 'mobile-legends', category: 'uid' },
   { id: 'hok', name: 'Honor of Kings', nameAr: 'هونر أوف كينجز', image: hokImg, slug: 'honor-of-kings', category: 'other' },
-  { id: 'pubg', name: 'PUBG Mobile', nameAr: 'ببجي موبايل', image: pubgImg, slug: 'pubg-mobile', category: 'uid' },
-  { id: 'genshin', name: 'Genshin Impact', nameAr: 'جنشن إمباكت', image: genshinImg, slug: 'genshin-impact', category: 'login' },
-  { id: 'silkroad', name: 'Silkroad Mobile', nameAr: 'سيلك رود موبايل', image: silkroadImg, slug: 'silkroad-mobile', category: 'other' },
+  { id: 'mlbb', name: 'Mobile Legends', nameAr: 'موبايل ليجندز', image: mlbbImg, slug: 'mobile-legends', category: 'uid' },
+];
+
+export interface ServerOption {
+  id: string;
+  labelAr: string;
+  labelEn: string;
+}
+
+export const arabicServers: ServerOption[] = [
+  { id: 'global', labelAr: 'عالمي', labelEn: 'Global' },
+  { id: 'indonesian', labelAr: 'اندونيسي', labelEn: 'Indonesian' },
+  { id: 'philippine', labelAr: 'فلبيني', labelEn: 'Philippine' },
+  { id: 'turkish', labelAr: 'تركي', labelEn: 'Turkish' },
+  { id: 'malaysian', labelAr: 'ماليزي', labelEn: 'Malaysian' },
+  { id: 'singaporean', labelAr: 'سنغافوري', labelEn: 'Singaporean' },
+  { id: 'american', labelAr: 'امريكي', labelEn: 'American' },
 ];
 
 export const mlbbServers = [
