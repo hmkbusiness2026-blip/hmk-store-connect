@@ -127,6 +127,20 @@ const CheckoutPage = () => {
       </header>
 
       <div className="px-5 pt-4 space-y-5 max-w-lg mx-auto">
+        {onDuty === false && (
+          <div className="glass-card p-4 rounded-2xl border border-destructive/40 flex items-start gap-3">
+            <Clock className="text-destructive shrink-0 mt-0.5" size={20} />
+            <div className="space-y-1">
+              <p className="font-display font-extrabold text-sm text-destructive">
+                {lang === 'ar' ? 'نحن خارج أوقات العمل حالياً' : 'We are currently off-duty'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {lang === 'ar' ? 'مواعيد العمل: 10 صباحاً - 2 منتصف الليل' : 'Working hours: 10 AM – 2 AM'}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Order Summary */}
         <div className="glass-card p-4 rounded-2xl space-y-3">
           <h2 className="font-display font-extrabold text-sm text-foreground">
@@ -191,10 +205,10 @@ const CheckoutPage = () => {
         </div>
 
         {/* Dynamic transfer flow */}
-        {method && !assignedAdmin && (
+        {method && !revealed && onDuty !== false && (
           <button
             onClick={requestTransfer}
-            disabled={loadingAdmin}
+            disabled={loadingAdmin || !transferNumber}
             className="w-full py-3 rounded-full font-display font-bold text-sm bg-secondary text-secondary-foreground flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {loadingAdmin ? (
@@ -205,17 +219,17 @@ const CheckoutPage = () => {
           </button>
         )}
 
-        {assignedAdmin && (
+        {revealed && transferNumber && (
           <div className="glass-card p-4 rounded-2xl space-y-2">
             <p className="text-xs font-display uppercase tracking-wider text-muted-foreground">
               {lang === 'ar' ? 'رقم ادمن المناوب' : 'On-Duty Admin Number'}
             </p>
-            <p className="font-display font-bold text-foreground">{assignedAdmin.name}</p>
+            <p className="font-display font-bold text-foreground">{adminName}</p>
             <div className="flex items-center gap-2">
-              <p className="text-primary font-mono text-base">{assignedAdmin.transferNumber}</p>
+              <p className="text-primary font-mono text-base">{transferNumber}</p>
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText(assignedAdmin.transferNumber);
+                  navigator.clipboard.writeText(transferNumber);
                   toast({ title: lang === 'ar' ? 'تم النسخ' : 'Copied!' });
                 }}
                 className="text-muted-foreground hover:text-primary"
@@ -226,7 +240,7 @@ const CheckoutPage = () => {
           </div>
         )}
 
-        {assignedAdmin && (
+        {revealed && transferNumber && (
           <>
             <div>
               <label className="text-xs font-display font-bold uppercase tracking-wider text-muted-foreground mb-2 block">
