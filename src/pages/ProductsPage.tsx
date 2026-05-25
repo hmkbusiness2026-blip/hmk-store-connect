@@ -138,7 +138,7 @@ const ProductsPage = () => {
                   <span className="font-display font-bold text-sm text-foreground">
                     {pkg.diamonds ?? pkg.name}
                   </span>
-                  <span className="text-xs font-display font-bold text-primary mt-1">
+                  <span className="w-full text-start text-xs font-display font-bold text-primary mt-1">
                     {pkg.price} EGP
                   </span>
 
