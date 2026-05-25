@@ -44,6 +44,15 @@ export const arabicServers: ServerOption[] = [
   { id: 'american', labelAr: 'امريكي', labelEn: 'American' },
 ];
 
+// Honor of Kings ships with only 2 servers
+export const hokServers: ServerOption[] = [
+  { id: 'egyptian', labelAr: 'سيرفر مصري', labelEn: 'Egyptian Server' },
+  { id: 'global', labelAr: 'سيرفر عالمي', labelEn: 'Global Server' },
+];
+
+export const getServersForGame = (gameId: string): ServerOption[] =>
+  gameId === 'hok' ? hokServers : arabicServers;
+
 export const mlbbServers = [
   'Global', 'Indonesian', 'Philippines', 'Russian', 'Turkish', 'Malaysian', 'Singaporean',
 ];

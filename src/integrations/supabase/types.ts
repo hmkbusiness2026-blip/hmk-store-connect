@@ -206,6 +206,30 @@ export type Database = {
         }
         Relationships: []
       }
+      login_attempts: {
+        Row: {
+          failed_count: number
+          lock_level: number
+          lock_until: string | null
+          phone: string
+          updated_at: string
+        }
+        Insert: {
+          failed_count?: number
+          lock_level?: number
+          lock_until?: string | null
+          phone: string
+          updated_at?: string
+        }
+        Update: {
+          failed_count?: number
+          lock_level?: number
+          lock_until?: string | null
+          phone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           assigned_to: string | null
@@ -302,6 +326,33 @@ export type Database = {
         }
         Relationships: []
       }
+      order_reviews: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          order_id: string
+          rating: number
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          order_id: string
+          rating?: number
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string
+          rating?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           admin_name: string | null
@@ -362,6 +413,33 @@ export type Database = {
           updated_at?: string
           user_id?: string
           zone?: string | null
+        }
+        Relationships: []
+      }
+      product_images: {
+        Row: {
+          created_at: string
+          game_id: string
+          id: string
+          image_url: string
+          package_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          game_id: string
+          id?: string
+          image_url: string
+          package_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          game_id?: string
+          id?: string
+          image_url?: string
+          package_id?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -654,6 +732,14 @@ export type Database = {
         Args: { p_diamonds: number; p_user_id: string }
         Returns: undefined
       }
+      check_login_lock: {
+        Args: { _phone: string }
+        Returns: {
+          hours_remaining: number
+          lock_until: string
+          locked: boolean
+        }[]
+      }
       close_shift: {
         Args: {
           _end_instapay: number
@@ -713,6 +799,14 @@ export type Database = {
         }
         Returns: string
       }
+      record_failed_login: {
+        Args: { _phone: string }
+        Returns: {
+          hours: number
+          lock_until: string
+          locked: boolean
+        }[]
+      }
       reject_handover: {
         Args: { _handover_id: string; _vault_key: string }
         Returns: undefined
@@ -730,6 +824,7 @@ export type Database = {
         }
         Returns: string
       }
+      reset_login_attempts: { Args: { _phone: string }; Returns: undefined }
       set_vault_key: { Args: { _key: string }; Returns: undefined }
       update_admin_profile: {
         Args: { _full_name: string; _instapay: string; _vodafone: string }

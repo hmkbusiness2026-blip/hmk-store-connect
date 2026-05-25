@@ -1,10 +1,12 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Minus, Plus, Gem, LogIn, Clock } from 'lucide-react';
-import { games, arabicServers, mlbbPackages, type PackageItem } from '@/lib/gameData';
+import { games, arabicServers, hokServers, mlbbPackages, type PackageItem } from '@/lib/gameData';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStoreOnDuty } from '@/hooks/useStoreOnDuty';
+import { supabase } from '@/integrations/supabase/client';
+import { onlyDigits } from '@/lib/validation';
 
 interface CartItem extends PackageItem {
   qty: number;
@@ -17,13 +19,31 @@ const ProductsPage = () => {
   const { user } = useAuth();
   const { onDuty } = useStoreOnDuty();
   const game = games.find((g) => g.id === gameId);
-  const server = arabicServers.find((s) => s.id === serverId);
+  const serverList = gameId === 'hok' ? hokServers : arabicServers;
+  const server = serverList.find((s) => s.id === serverId);
 
   const [cart, setCart] = useState<Record<string, CartItem>>({});
   const [playerId, setPlayerId] = useState('');
   const [serverNum, setServerNum] = useState('');
+  const [productImages, setProductImages] = useState<Record<string, string>>({});
 
   const allPackages = useMemo(() => mlbbPackages.flatMap((c) => c.packages), []);
+
+  useEffect(() => {
+    if (!gameId) return;
+    supabase
+      .from('product_images')
+      .select('package_id, image_url')
+      .eq('game_id', gameId)
+      .then(({ data }) => {
+        const map: Record<string, string> = {};
+        (data || []).forEach((r: any) => {
+          map[r.package_id ?? '__default__'] = r.image_url;
+        });
+        setProductImages(map);
+      });
+  }, [gameId]);
+
 
   const totalPrice = useMemo(
     () => Object.values(cart).reduce((sum, i) => sum + i.price * i.qty, 0),
@@ -123,28 +143,36 @@ const ProductsPage = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {allPackages.map((pkg) => {
               const inCart = cart[pkg.id];
+              const img = productImages[pkg.id] || productImages['__default__'];
               return (
                 <button
                   key={pkg.id}
                   onClick={() => toggle(pkg)}
-                  className={`relative flex flex-col items-center justify-between p-3 rounded-2xl border transition-all ${
+                  className={`relative flex flex-col items-stretch justify-between p-3 rounded-2xl border transition-all ${
                     inCart
                       ? 'border-primary bg-primary/10 shadow-[0_0_18px_-4px_hsl(var(--primary)/0.6)]'
                       : 'border-border glass-card hover:border-primary/40'
                   }`}
                 >
                   {pkg.popular && (
-                    <span className="absolute top-1.5 start-1.5 text-[9px] px-1.5 py-0.5 rounded bg-accent text-accent-foreground font-bold uppercase">
+                    <span className="absolute top-1.5 start-1.5 z-10 text-[9px] px-1.5 py-0.5 rounded bg-accent text-accent-foreground font-bold uppercase">
                       ★
                     </span>
                   )}
-                  <Gem size={22} className="text-primary mb-1" />
-                  <span className="font-display font-bold text-sm text-foreground">
+                  <div className="w-full aspect-square mb-2 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+                    {img ? (
+                      <img src={img} alt={pkg.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <Gem size={28} className="text-primary" />
+                    )}
+                  </div>
+                  <span className="font-display font-bold text-sm text-foreground text-center">
                     {pkg.diamonds ?? pkg.name}
                   </span>
                   <span className="w-full text-start text-xs font-display font-bold text-primary mt-1">
                     {pkg.price} EGP
                   </span>
+
 
                   {inCart && (
                     <div
@@ -204,7 +232,7 @@ const ProductsPage = () => {
                   placeholder="123456780"
                   value={playerId}
                   disabled={onDuty === false}
-                  onChange={(e) => setPlayerId(e.target.value)}
+                  onChange={(e) => setPlayerId(onlyDigits(e.target.value))}
                   className="w-full px-3 py-2.5 rounded-md bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
@@ -218,7 +246,7 @@ const ProductsPage = () => {
                   placeholder="1234"
                   value={serverNum}
                   disabled={onDuty === false}
-                  onChange={(e) => setServerNum(e.target.value)}
+                  onChange={(e) => setServerNum(onlyDigits(e.target.value))}
                   className="w-full px-3 py-2.5 rounded-md bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
