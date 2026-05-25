@@ -1,4 +1,4 @@
-import { Home, MessageSquare, User, Star } from 'lucide-react';
+import { Home, MessageSquare, User, Star, Crown } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -66,8 +66,14 @@ const BottomNav = () => {
           </div>
 
           <div className="glass border-t border-border h-16 flex items-stretch">
-            {/* Right group (RTL) / left group (LTR): Home */}
+            {/* Right group (RTL start): PRO + Home */}
             <div className="flex-1 flex justify-end">
+              <NavBtn
+                icon={Crown}
+                label="PRO"
+                active={location.pathname.startsWith('/pro')}
+                onClick={() => navigate(user ? '/pro' : '/auth')}
+              />
               <NavBtn
                 icon={items[0].icon}
                 label={items[0].label}

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCurrentShift } from '@/hooks/useCurrentShift';
 import { useAuth } from '@/contexts/AuthContext';
-import { PlayCircle, ArrowLeftRight, StopCircle, Bell, History, AlertCircle } from 'lucide-react';
+import { PlayCircle, ArrowLeftRight, StopCircle, Bell, History, AlertCircle, BookOpen, Smile } from 'lucide-react';
 import { OpenShiftDialog, CloseShiftDialog } from '@/components/admin/ShiftDialogs';
 import { HandoverRequestDialog, HandoverAcceptDialog } from '@/components/admin/HandoverDialogs';
 
@@ -102,6 +102,23 @@ const AdminControlPage = () => {
           <p className="text-[11px] text-muted-foreground">Work History</p>
         </div>
       </Link>
+
+      <div className="grid grid-cols-2 gap-3">
+        <Link to="/admin/pro-articles" className="glass-card p-4 flex items-center gap-2">
+          <BookOpen size={18} className="text-primary" />
+          <div>
+            <p className="font-display font-bold text-sm">جداول PRO</p>
+            <p className="text-[10px] text-muted-foreground">Event Tables</p>
+          </div>
+        </Link>
+        <Link to="/admin/pro-emotes" className="glass-card p-4 flex items-center gap-2">
+          <Smile size={18} className="text-primary" />
+          <div>
+            <p className="font-display font-bold text-sm">أكواد الإيموتات</p>
+            <p className="text-[10px] text-muted-foreground">Emote Codes</p>
+          </div>
+        </Link>
+      </div>
 
       <div className="glass-card p-4">
         <div className="flex items-center gap-2 mb-1">

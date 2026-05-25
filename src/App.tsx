@@ -13,6 +13,13 @@ import CheckoutPage from "./pages/CheckoutPage";
 import AuthPage from "./pages/AuthPage";
 import OrdersPage from "./pages/OrdersPage";
 import OrderDetailPage from "./pages/OrderDetailPage";
+import ProPage from "./pages/pro/ProPage";
+import ProArticlesPage from "./pages/pro/ProArticlesPage";
+import ProArticleDetailPage from "./pages/pro/ProArticleDetailPage";
+import ProEmotesPage from "./pages/pro/ProEmotesPage";
+import ProCompetitionsPage from "./pages/pro/ProCompetitionsPage";
+import AdminProArticlesPage from "./pages/admin/AdminProArticlesPage";
+import AdminProEmotesPage from "./pages/admin/AdminProEmotesPage";
 
 import VipPage from "./pages/VipPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -77,6 +84,11 @@ const AppContent = () => {
         <Route path="/auth" element={user ? <Navigate to={isAdmin ? "/admin/orders" : "/"} replace /> : <AuthPage />} />
         <Route path="/orders" element={user ? <OrdersPage /> : <AuthPage />} />
         <Route path="/orders/:id" element={user ? <OrderDetailPage /> : <AuthPage />} />
+        <Route path="/pro" element={user ? <ProPage /> : <AuthPage />} />
+        <Route path="/pro/articles" element={user ? <ProArticlesPage /> : <AuthPage />} />
+        <Route path="/pro/articles/:id" element={user ? <ProArticleDetailPage /> : <AuthPage />} />
+        <Route path="/pro/emotes" element={user ? <ProEmotesPage /> : <AuthPage />} />
+        <Route path="/pro/competitions" element={user ? <ProCompetitionsPage /> : <AuthPage />} />
 
         <Route path="/vip" element={user ? <VipPage /> : <AuthPage />} />
         <Route path="/profile" element={user ? <ProfilePage /> : <AuthPage />} />
@@ -88,6 +100,8 @@ const AppContent = () => {
           <Route path="profile" element={<AdminProfilePage />} />
           <Route path="control" element={<AdminControlPage />} />
           <Route path="history" element={<AdminWorkHistoryPage />} />
+          <Route path="pro-articles" element={<AdminProArticlesPage />} />
+          <Route path="pro-emotes" element={<AdminProEmotesPage />} />
         </Route>
         <Route path="/admin/customize" element={user ? <AdminCustomize /> : <AuthPage />} />
         <Route path="/admin/legacy" element={user ? <AdminPage /> : <AuthPage />} />
