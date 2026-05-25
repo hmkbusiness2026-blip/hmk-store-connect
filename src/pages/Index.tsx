@@ -19,7 +19,6 @@ import hmkLogo from '@/assets/hmk-logo.png';
 const Index = () => {
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [category, setCategory] = useState('all');
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, userRole, favoriteGame, setFavoriteGame, loading } = useAuth();
   const { t, lang, toggleLang } = useLanguage();
