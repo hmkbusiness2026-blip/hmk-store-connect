@@ -12,6 +12,8 @@ import ProductsPage from "./pages/ProductsPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import AuthPage from "./pages/AuthPage";
 import OrdersPage from "./pages/OrdersPage";
+import OrderDetailPage from "./pages/OrderDetailPage";
+
 import VipPage from "./pages/VipPage";
 import ProfilePage from "./pages/ProfilePage";
 import AdminPage from "./pages/AdminPage";
@@ -74,6 +76,8 @@ const AppContent = () => {
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/auth" element={user ? <Navigate to={isAdmin ? "/admin/orders" : "/"} replace /> : <AuthPage />} />
         <Route path="/orders" element={user ? <OrdersPage /> : <AuthPage />} />
+        <Route path="/orders/:id" element={user ? <OrderDetailPage /> : <AuthPage />} />
+
         <Route path="/vip" element={user ? <VipPage /> : <AuthPage />} />
         <Route path="/profile" element={user ? <ProfilePage /> : <AuthPage />} />
         <Route path="/admin" element={<AdminLayout />}>
