@@ -201,6 +201,15 @@ const ProductsPage = () => {
             />
           </div>
         </div>
+
+        {/* Continue button below player info form */}
+        <button
+          disabled={!canCheckout}
+          onClick={handleCheckout}
+          className="w-full py-3.5 rounded-2xl font-display font-extrabold text-base bg-primary text-primary-foreground shadow-[0_8px_24px_-8px_hsl(var(--primary)/0.6)] disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-transform"
+        >
+          {lang === 'ar' ? 'متابعة' : 'Continue'}
+        </button>
       </div>
 
       {/* Sticky bottom action */}
