@@ -102,6 +102,13 @@ const Index = () => {
           <CheckoutFlow gameId={selectedGame} onClose={() => setSelectedGame(null)} />
         )}
       </AnimatePresence>
+
+      <FavoriteGameModal
+        open={showOnboarding}
+        onSelect={async (id) => {
+          await setFavoriteGame(id);
+        }}
+      />
     </div>
   );
 };
