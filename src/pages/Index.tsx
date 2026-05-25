@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import PromoBanner from '@/components/PromoBanner';
 import GameGrid from '@/components/GameGrid';
 import CheckoutFlow from '@/components/CheckoutFlow';
@@ -9,6 +9,7 @@ import ReviewsCarousel from '@/components/ReviewsCarousel';
 import SocialLinks from '@/components/SocialLinks';
 import AppFooter from '@/components/AppFooter';
 import NotificationBell from '@/components/NotificationBell';
+import FavoriteGameModal from '@/components/FavoriteGameModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { AnimatePresence } from 'framer-motion';
@@ -19,10 +20,24 @@ const Index = () => {
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [category, setCategory] = useState('all');
-  const { user, userRole } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { user, userRole, favoriteGame, setFavoriteGame, loading } = useAuth();
   const { t, lang, toggleLang } = useLanguage();
 
   const isAdmin = userRole === 'admin' || userRole === 'owner';
+
+  // Open checkout via ?game= deep link (used by the favorite-game floating button)
+  useEffect(() => {
+    const g = searchParams.get('game');
+    if (g) {
+      setSelectedGame(g);
+      searchParams.delete('game');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
+  // Onboarding: prompt logged-in users who haven't picked a favorite game yet
+  const showOnboarding = !!user && !loading && favoriteGame === null;
 
   return (
     <div className="min-h-screen pb-24">
