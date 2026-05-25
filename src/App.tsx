@@ -100,6 +100,8 @@ const AppContent = () => {
           <Route path="profile" element={<AdminProfilePage />} />
           <Route path="control" element={<AdminControlPage />} />
           <Route path="history" element={<AdminWorkHistoryPage />} />
+          <Route path="pro-articles" element={<AdminProArticlesPage />} />
+          <Route path="pro-emotes" element={<AdminProEmotesPage />} />
         </Route>
         <Route path="/admin/customize" element={user ? <AdminCustomize /> : <AuthPage />} />
         <Route path="/admin/legacy" element={user ? <AdminPage /> : <AuthPage />} />
