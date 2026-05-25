@@ -13,6 +13,13 @@ import CheckoutPage from "./pages/CheckoutPage";
 import AuthPage from "./pages/AuthPage";
 import OrdersPage from "./pages/OrdersPage";
 import OrderDetailPage from "./pages/OrderDetailPage";
+import ProPage from "./pages/pro/ProPage";
+import ProArticlesPage from "./pages/pro/ProArticlesPage";
+import ProArticleDetailPage from "./pages/pro/ProArticleDetailPage";
+import ProEmotesPage from "./pages/pro/ProEmotesPage";
+import ProCompetitionsPage from "./pages/pro/ProCompetitionsPage";
+import AdminProArticlesPage from "./pages/admin/AdminProArticlesPage";
+import AdminProEmotesPage from "./pages/admin/AdminProEmotesPage";
 
 import VipPage from "./pages/VipPage";
 import ProfilePage from "./pages/ProfilePage";
