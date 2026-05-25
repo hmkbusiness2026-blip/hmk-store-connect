@@ -107,8 +107,13 @@ const Index = () => {
 
       <FavoriteGameModal
         open={showOnboarding}
+        dismissible
+        onClose={() => {
+          if (onboardingKey) localStorage.setItem(onboardingKey, '1');
+        }}
         onSelect={async (id) => {
           await setFavoriteGame(id);
+          if (onboardingKey) localStorage.setItem(onboardingKey, '1');
         }}
       />
     </div>
