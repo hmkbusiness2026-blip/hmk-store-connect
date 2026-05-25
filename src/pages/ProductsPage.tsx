@@ -143,28 +143,36 @@ const ProductsPage = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {allPackages.map((pkg) => {
               const inCart = cart[pkg.id];
+              const img = productImages[pkg.id] || productImages['__default__'];
               return (
                 <button
                   key={pkg.id}
                   onClick={() => toggle(pkg)}
-                  className={`relative flex flex-col items-center justify-between p-3 rounded-2xl border transition-all ${
+                  className={`relative flex flex-col items-stretch justify-between p-3 rounded-2xl border transition-all ${
                     inCart
                       ? 'border-primary bg-primary/10 shadow-[0_0_18px_-4px_hsl(var(--primary)/0.6)]'
                       : 'border-border glass-card hover:border-primary/40'
                   }`}
                 >
                   {pkg.popular && (
-                    <span className="absolute top-1.5 start-1.5 text-[9px] px-1.5 py-0.5 rounded bg-accent text-accent-foreground font-bold uppercase">
+                    <span className="absolute top-1.5 start-1.5 z-10 text-[9px] px-1.5 py-0.5 rounded bg-accent text-accent-foreground font-bold uppercase">
                       ★
                     </span>
                   )}
-                  <Gem size={22} className="text-primary mb-1" />
-                  <span className="font-display font-bold text-sm text-foreground">
+                  <div className="w-full aspect-square mb-2 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+                    {img ? (
+                      <img src={img} alt={pkg.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <Gem size={28} className="text-primary" />
+                    )}
+                  </div>
+                  <span className="font-display font-bold text-sm text-foreground text-center">
                     {pkg.diamonds ?? pkg.name}
                   </span>
                   <span className="w-full text-start text-xs font-display font-bold text-primary mt-1">
                     {pkg.price} EGP
                   </span>
+
 
                   {inCart && (
                     <div
