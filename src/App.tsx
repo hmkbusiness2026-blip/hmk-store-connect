@@ -32,6 +32,11 @@ import AdminProfilePage from "./pages/admin/AdminProfilePage";
 import AdminControlPage from "./pages/admin/AdminControlPage";
 import AdminWorkHistoryPage from "./pages/admin/AdminWorkHistoryPage";
 import OwnerPage from "./pages/OwnerPage";
+import OwnerLayout from "./pages/owner/OwnerLayout";
+import OwnerLeaderPage from "./pages/owner/OwnerLeaderPage";
+import OwnerOrdersPage from "./pages/owner/OwnerOrdersPage";
+import OwnerReportsPage from "./pages/owner/OwnerReportsPage";
+import OwnerProfilePage from "./pages/owner/OwnerProfilePage";
 import AdminCustomize from "./pages/AdminCustomize";
 import NotFound from "./pages/NotFound";
 import StaffLayout from "./pages/staff/StaffLayout";
@@ -71,8 +76,10 @@ const AppContent = () => {
     );
   }
 
-  const isAdmin = userRole === 'admin' || (userRole as string) === 'owner';
+  const isOwner = userRole === 'owner';
+  const isAdmin = userRole === 'admin' || isOwner;
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const isOwnerRoute = location.pathname.startsWith('/owner');
 
   return (
     <>
@@ -81,7 +88,7 @@ const AppContent = () => {
         <Route path="/game/:gameId" element={<GamePage />} />
         <Route path="/game/:gameId/:serverId" element={<ProductsPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
-        <Route path="/auth" element={user ? <Navigate to={isAdmin ? "/admin/orders" : "/"} replace /> : <AuthPage />} />
+        <Route path="/auth" element={user ? <Navigate to={isOwner ? "/owner/leader" : isAdmin ? "/admin/orders" : "/"} replace /> : <AuthPage />} />
         <Route path="/orders" element={user ? <OrdersPage /> : <AuthPage />} />
         <Route path="/orders/:id" element={user ? <OrderDetailPage /> : <AuthPage />} />
         <Route path="/pro" element={user ? <ProPage /> : <AuthPage />} />
@@ -105,7 +112,15 @@ const AppContent = () => {
         </Route>
         <Route path="/admin/customize" element={user ? <AdminCustomize /> : <AuthPage />} />
         <Route path="/admin/legacy" element={user ? <AdminPage /> : <AuthPage />} />
-        <Route path="/owner" element={user ? <OwnerPage /> : <AuthPage />} />
+        <Route path="/owner-legacy" element={user ? <OwnerPage /> : <AuthPage />} />
+        <Route path="/owner" element={<OwnerLayout />}>
+          <Route index element={<Navigate to="/owner/leader" replace />} />
+          <Route path="leader" element={<OwnerLeaderPage />} />
+          <Route path="orders" element={<OwnerOrdersPage />} />
+          <Route path="reports" element={<OwnerReportsPage />} />
+          <Route path="profile" element={<OwnerProfilePage />} />
+          <Route path="users" element={<OwnerPage />} />
+        </Route>
         <Route path="/staff" element={<StaffGuard><StaffLayout /></StaffGuard>}>
           <Route index element={<Navigate to="/staff/dashboard" replace />} />
           <Route path="dashboard" element={<StaffDashboard />} />
@@ -120,8 +135,8 @@ const AppContent = () => {
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
-      {!isAdminRoute && <BottomNav />}
-      {!isAdminRoute && <WhatsAppButton />}
+      {!isAdminRoute && !isOwnerRoute && <BottomNav />}
+      {!isAdminRoute && !isOwnerRoute && <WhatsAppButton />}
     </>
   );
 };
