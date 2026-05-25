@@ -13,6 +13,7 @@ const ProductsPage = () => {
   const { gameId, serverId } = useParams();
   const navigate = useNavigate();
   const { lang } = useLanguage();
+  const { user } = useAuth();
   const game = games.find((g) => g.id === gameId);
   const server = arabicServers.find((s) => s.id === serverId);
 
