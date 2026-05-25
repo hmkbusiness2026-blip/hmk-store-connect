@@ -103,14 +103,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       email: fakeEmail,
       password,
     });
-    if (!error && data.user) {
-      // Initialize profile and role via RPC
+    if (error) {
+      const msg = (error.message || '').toLowerCase();
+      if (msg.includes('already') || msg.includes('registered') || msg.includes('exists')) {
+        return { error: { ...error, code: 'duplicate', message: 'هذه البيانات مسجلة بالفعل، يرجى تسجيل الدخول' } };
+      }
+      return { error };
+    }
+    // Supabase returns an obfuscated user with empty identities when the email already exists
+    if (data.user && Array.isArray((data.user as any).identities) && (data.user as any).identities.length === 0) {
+      return { error: { code: 'duplicate', message: 'هذه البيانات مسجلة بالفعل، يرجى تسجيل الدخول' } as any };
+    }
+    if (data.user) {
       await supabase.rpc('initialize_new_user', {
         p_user_id: data.user.id,
         p_phone: phone,
       });
     }
-    return { error };
+    // Ensure session is active (auto-login). If no session was returned, sign in explicitly.
+    if (!data.session) {
+      await supabase.auth.signInWithPassword({ email: fakeEmail, password });
+    }
+    return { error: null };
   };
 
   const signIn = async (phone: string, password: string) => {
