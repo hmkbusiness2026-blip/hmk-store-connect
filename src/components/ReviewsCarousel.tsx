@@ -78,8 +78,8 @@ const ReviewsCarousel = () => {
         {t('customerReviews')}
       </h2>
       <div className="relative overflow-hidden glass-card py-3 group">
-        <div className="absolute inset-y-0 start-0 w-12 bg-gradient-to-e from-card to-transparent z-10 pointer-events-none" />
-        <div className="absolute inset-y-0 end-0 w-12 bg-gradient-to-w from-card to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-card to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-card to-transparent z-10 pointer-events-none" />
         <div className="flex gap-8 animate-marquee whitespace-nowrap group-hover:[animation-play-state:paused]">
           {loop.map((r, i) => (
             <div key={`${r.id}-${i}`} className="flex items-center gap-2 text-xs">
