@@ -232,7 +232,7 @@ const ProductsPage = () => {
                   placeholder="123456780"
                   value={playerId}
                   disabled={onDuty === false}
-                  onChange={(e) => setPlayerId(e.target.value)}
+                  onChange={(e) => setPlayerId(onlyDigits(e.target.value))}
                   className="w-full px-3 py-2.5 rounded-md bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
@@ -246,7 +246,7 @@ const ProductsPage = () => {
                   placeholder="1234"
                   value={serverNum}
                   disabled={onDuty === false}
-                  onChange={(e) => setServerNum(e.target.value)}
+                  onChange={(e) => setServerNum(onlyDigits(e.target.value))}
                   className="w-full px-3 py-2.5 rounded-md bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
