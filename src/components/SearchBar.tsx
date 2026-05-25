@@ -1,5 +1,6 @@
 import { Search } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { sanitizeSearch } from '@/lib/validation';
 
 interface SearchBarProps {
   value: string;
@@ -16,7 +17,8 @@ const SearchBar = ({ value, onChange }: SearchBarProps) => {
         type="text"
         placeholder={t('searchGames')}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        maxLength={60}
+        onChange={(e) => onChange(sanitizeSearch(e.target.value))}
         className="w-full ps-10 pe-3 py-2.5 rounded-lg bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
       />
     </div>
