@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Check, Copy, Loader2, Upload, Wallet, Smartphone } from 'lucide-react';
-import { admins } from '@/lib/gameData';
+import { ArrowLeft, ArrowRight, Check, Clock, Copy, Loader2, Upload, Wallet, Smartphone } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useStoreOnDuty } from '@/hooks/useStoreOnDuty';
 
 interface CartItem {
   id: string;
@@ -32,10 +32,11 @@ const CheckoutPage = () => {
   const { user } = useAuth();
   const { lang } = useLanguage();
   const { toast } = useToast();
+  const { onDuty, activeAdmin } = useStoreOnDuty();
   const state = location.state as CheckoutState | null;
 
   const [method, setMethod] = useState<'wallet' | 'instapay' | ''>('');
-  const [assignedAdmin, setAssignedAdmin] = useState<typeof admins[0] | null>(null);
+  const [revealed, setRevealed] = useState(false);
   const [loadingAdmin, setLoadingAdmin] = useState(false);
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [last3, setLast3] = useState('');
@@ -48,21 +49,24 @@ const CheckoutPage = () => {
 
   if (!state) return null;
 
+  const transferNumber = method === 'wallet' ? activeAdmin?.vodafone_cash : activeAdmin?.instapay_id;
+  const adminName = activeAdmin?.full_name || (lang === 'ar' ? 'الادمن المناوب' : 'On-Duty Admin');
+
   const requestTransfer = async () => {
     setLoadingAdmin(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    setAssignedAdmin(admins[Math.floor(Math.random() * admins.length)]);
+    await new Promise((r) => setTimeout(r, 800));
+    setRevealed(true);
     setLoadingAdmin(false);
   };
 
-  const canSubmit = !!assignedAdmin && !!receiptFile && last3.trim().length === 3 && !submitting;
+  const canSubmit = revealed && !!transferNumber && !!receiptFile && last3.trim().length === 3 && !submitting && onDuty === true;
 
   const handleSubmit = async () => {
     if (!user) {
       navigate('/auth');
       return;
     }
-    if (!canSubmit || !receiptFile || !assignedAdmin) return;
+    if (!canSubmit || !receiptFile || !transferNumber) return;
     setSubmitting(true);
     try {
       const fileExt = receiptFile.name.split('.').pop();
@@ -82,7 +86,7 @@ const CheckoutPage = () => {
         package_name: `${item.name} × ${item.qty}`,
         price: item.price * item.qty,
         payment_method: method,
-        admin_name: assignedAdmin.name,
+        admin_name: adminName,
         receipt_url: fileName,
         status: 'pending',
       }));
