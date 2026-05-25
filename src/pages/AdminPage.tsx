@@ -167,14 +167,27 @@ const AdminPage = () => {
 
                 <div className="flex items-center gap-3">
                   {order.receipt_url && (
-                    <a
-                      href={order.receipt_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        // receipt_url may be a legacy public URL or a new storage path.
+                        if (order.receipt_url.startsWith('http')) {
+                          window.open(order.receipt_url, '_blank', 'noopener,noreferrer');
+                          return;
+                        }
+                        const { data, error } = await supabase.storage
+                          .from('receipts')
+                          .createSignedUrl(order.receipt_url, 60);
+                        if (error || !data) {
+                          toast({ title: 'Error', description: 'Could not load receipt', variant: 'destructive' });
+                          return;
+                        }
+                        window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
+                      }}
                       className="text-xs text-primary flex items-center gap-1 hover:underline"
                     >
                       <ExternalLink size={12} /> {t('viewReceipt')}
-                    </a>
+                    </button>
                   )}
                   <span className="text-[10px] text-muted-foreground">{order.payment_method}</span>
                 </div>

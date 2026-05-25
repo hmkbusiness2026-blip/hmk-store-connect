@@ -54,10 +54,7 @@ const CheckoutFlow = ({ gameId, onClose }: CheckoutFlowProps) => {
 
       if (uploadErr) throw uploadErr;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('receipts')
-        .getPublicUrl(fileName);
-
+      // Store the storage path; signed URLs are generated on demand when viewing.
       const { error: orderErr } = await supabase.from('orders').insert({
         user_id: user.id,
         game_id: gameId,
@@ -69,19 +66,13 @@ const CheckoutFlow = ({ gameId, onClose }: CheckoutFlowProps) => {
         price: selectedPkg.price,
         payment_method: paymentMethod,
         admin_name: assignedAdmin.name,
-        receipt_url: publicUrl,
+        receipt_url: fileName,
         status: 'pending',
       });
 
       if (orderErr) throw orderErr;
 
-      // In-app notification for the user
-      await supabase.from('notifications').insert({
-        user_id: user.id,
-        title: 'Order Received',
-        message: `Your ${selectedPkg.name} order is being reviewed.`,
-        read: false,
-      });
+      // Order-confirmation notification is created automatically by a DB trigger.
 
       toast({ title: 'Order submitted!', description: 'We\'ll process it shortly.' });
       onClose();
