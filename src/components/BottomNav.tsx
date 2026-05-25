@@ -12,6 +12,7 @@ const BottomNav = () => {
   const { t, lang } = useLanguage();
   const { user, favoriteGame, setFavoriteGame } = useAuth();
   const [pickerOpen, setPickerOpen] = useState(false);
+  const favoriteGameData = favoriteGame ? games.find((g) => g.id === favoriteGame) : null;
 
   const handleFavorite = () => {
     if (!user) return navigate('/auth');
