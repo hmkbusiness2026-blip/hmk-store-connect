@@ -25,6 +25,15 @@ const Index = () => {
   const navigate = useNavigate();
 
   const isAdmin = userRole === 'admin' || userRole === 'owner';
+  const adminTopup = searchParams.get('adminTopup') === '1';
+
+  // Admins get redirected to their dashboard unless they explicitly chose Top-up
+  useEffect(() => {
+    if (!loading && isAdmin && !adminTopup) {
+      navigate('/admin/orders', { replace: true });
+    }
+  }, [loading, isAdmin, adminTopup, navigate]);
+
 
   // Legacy: favorite-game floating button still uses the inline checkout modal.
   useEffect(() => {

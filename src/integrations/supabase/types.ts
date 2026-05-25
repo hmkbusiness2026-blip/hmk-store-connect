@@ -206,6 +206,7 @@ export type Database = {
       orders: {
         Row: {
           admin_name: string | null
+          admin_note: string | null
           archived_at: string | null
           created_at: string
           game_id: string
@@ -215,6 +216,7 @@ export type Database = {
           payment_method: string
           player_uid: string
           price: number
+          processing_by: string | null
           receipt_url: string | null
           server: string
           status: string
@@ -224,6 +226,7 @@ export type Database = {
         }
         Insert: {
           admin_name?: string | null
+          admin_note?: string | null
           archived_at?: string | null
           created_at?: string
           game_id: string
@@ -233,6 +236,7 @@ export type Database = {
           payment_method: string
           player_uid: string
           price: number
+          processing_by?: string | null
           receipt_url?: string | null
           server: string
           status?: string
@@ -242,6 +246,7 @@ export type Database = {
         }
         Update: {
           admin_name?: string | null
+          admin_note?: string | null
           archived_at?: string | null
           created_at?: string
           game_id?: string
@@ -251,6 +256,7 @@ export type Database = {
           payment_method?: string
           player_uid?: string
           price?: number
+          processing_by?: string | null
           receipt_url?: string | null
           server?: string
           status?: string
