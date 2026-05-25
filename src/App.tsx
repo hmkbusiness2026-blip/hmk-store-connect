@@ -84,6 +84,11 @@ const AppContent = () => {
         <Route path="/auth" element={user ? <Navigate to={isAdmin ? "/admin/orders" : "/"} replace /> : <AuthPage />} />
         <Route path="/orders" element={user ? <OrdersPage /> : <AuthPage />} />
         <Route path="/orders/:id" element={user ? <OrderDetailPage /> : <AuthPage />} />
+        <Route path="/pro" element={user ? <ProPage /> : <AuthPage />} />
+        <Route path="/pro/articles" element={user ? <ProArticlesPage /> : <AuthPage />} />
+        <Route path="/pro/articles/:id" element={user ? <ProArticleDetailPage /> : <AuthPage />} />
+        <Route path="/pro/emotes" element={user ? <ProEmotesPage /> : <AuthPage />} />
+        <Route path="/pro/competitions" element={user ? <ProCompetitionsPage /> : <AuthPage />} />
 
         <Route path="/vip" element={user ? <VipPage /> : <AuthPage />} />
         <Route path="/profile" element={user ? <ProfilePage /> : <AuthPage />} />
