@@ -1,67 +1,60 @@
+## Goal
+Build an advanced shift-management & control hub for HMK Store admins, with off-duty enforcement on the customer side and shift financial reports.
 
-# Mobile UI Refactor — Dark Gaming App Layout
+## 1. Database (migration)
 
-Visual-only refactor of the storefront. No backend, schema, auth, or data changes. Existing HMK brand colors (fire gold `--primary`, fiery orange `--secondary`, diamond blue `--accent`) stay the source of truth — all accents, active states, and the floating button map to `--primary`. No neon green/yellow.
+New tables:
+- **`admin_profiles`** — `user_id` (uniq), `full_name`, `vodafone_cash`, `instapay_id`, `vault_key_hash` (bcrypt/sha), `updated_at`. RLS: admin reads/updates own; staff can read minimal fields (name, vodafone, instapay) of *active* admin via SECURITY DEFINER function.
+- **`admin_shifts`** — `id`, `admin_id`, `status` ('open'|'closed'|'handover_pending'), `opened_at`, `closed_at`, `start_smile`, `start_wallet`, `start_instapay` (numeric), `start_smile_note`, `start_wallet_note`, `start_instapay_note`, `end_smile`, `end_wallet`, `end_instapay` (numeric, nullable), `end_*_note`, `handover_to` (uuid nullable), `closed_reason` ('end'|'handover').
+- **`shift_handovers`** — `id`, `shift_id`, `from_admin`, `to_admin`, `status` ('pending'|'accepted'|'rejected'), `created_at`, `responded_at`.
 
-## 1. Global background
-- `src/index.css`: deepen `--background` to ~`#121212` (HSL `0 0% 7%`) so game art pops. Keep card/popover one step lighter for separation. Update `body` fallback color to match.
+SECURITY DEFINER helpers:
+- `verify_vault_key(_user_id, _key)` returns boolean (compare hash).
+- `set_vault_key(_key)` — hashes & stores for `auth.uid()`.
+- `get_active_admin()` — returns row with `admin_id, full_name, vodafone_cash, instapay_id` of the single open shift (if any). Publicly executable so customers can read active admin's payment info.
+- `is_store_on_duty()` — returns boolean (any open shift).
+- RPCs: `open_shift(vault_key, start_smile, start_wallet, start_instapay, notes...)`, `close_shift(vault_key, end_smile, end_wallet, end_instapay, notes...)`, `request_handover(to_admin, vault_key_from, end_values, notes)`, `accept_handover(handover_id, vault_key_to, start_values, notes)`, `reject_handover(handover_id, vault_key_to)`.
 
-## 2. Sticky header (`src/pages/Index.tsx`)
-- Convert the existing `<header>` to `sticky top-0 z-40` with a blurred dark background and bottom hairline border.
-- Left: HMK logo + "HMK STORE" wordmark (existing `hmk-logo.png`).
-- Right: keep language toggle + notification bell, then a **circular profile avatar placeholder** (40px) with a subtle `--primary`-tinted ring, linking to `/profile`. Admin "Customize" link stays for admins, restyled as an icon button.
-- Consistent 16–20px horizontal padding.
+All RPCs validate vault key + role, enforce single-open-shift, etc.
 
-## 3. Promo carousel (replaces `PromoBanner.tsx`)
-- Refactor `PromoBanner` into a swipeable carousel using the existing shadcn `carousel` component (Embla, already in repo).
-- 2–3 slides pulled from `site_config` keys (`banner_main`, plus new optional `banner_2`, `banner_3` — read-only, no schema change; missing keys just fall back to defaults).
-- Each slide: rounded-2xl, full-bleed game art (Honor of Kings, MLBB), gradient overlay, stylized title, subtitle, and a **"TOP UP" pill button** in `--primary` that scrolls to the games grid.
-- Auto-advance every 5s, dot indicators in muted/`--primary`.
+## 2. Admin UI
 
-## 4. Category tabs (`src/components/CategoryFilter.tsx`)
-- Replace pill buttons with a horizontally scrollable **text menu with underline indicator**.
-- Active tab: `text-foreground` + 2px underline bar in `--primary` (animated with `layoutId` via framer-motion, already a dep).
-- Inactive: `text-muted-foreground`.
-- Labels: keep current translation keys (`allGames`, `uidGame`, `loginGame`, `other`); map visually to the "Best Seller / TopUp Game / E-Wallet" style. No new categories added — just restyled.
+- **Profile page** (`AdminProfilePage.tsx`): add form for Full Name, Vodafone, InstaPay, Vault Key (set/change). Plus link to "تاريخ العمل / Work History".
+- **Control Hub** — new route `/admin/control` with sections:
+  - الدوام (Shift Ops): cards for Open / Handover / End — gated by current shift state. Modals collect vault key + start/end financials + notes.
+  - Pending incoming handover requests (accept/reject with vault key + start values).
+  - الاشعارات المهمة (placeholder card).
+- **Work History** `/admin/history`: list of closed shifts with start/end values and notes.
+- **AdminBottomNav**: add "التحكم" button.
 
-## 5. Content grid (`src/components/GameGrid.tsx`)
-- Keep current 3-col grid but upgrade card styling:
-  - Rounded-2xl, full-bleed game icon, subtle glass effect (`backdrop-blur`, `border-white/5`, soft inner shadow), elevation on hover/active.
-  - Title chip overlaid on bottom with gradient scrim.
-  - UID badge restyled to match new palette (use `--primary` instead of hardcoded green).
-- Ensure MLBB and Honor of Kings appear first in `gameData.ts` ordering (reorder array only — no data added).
-- Add active/tap scale + ring in `--primary`.
+## 3. Customer Off-Duty Enforcement
 
-## 6. Bottom navigation (`src/components/BottomNav.tsx`)
-- Rebuild as a fixed bottom bar with **5 slots**: Home, Game, [floating Search], Messages, Profile.
-  - "Game" = link to `/` games section (or reuse Home with a games anchor).
-  - "Messages" = link to `/orders` (closest existing route) — keeps existing routing untouched.
-  - VIP tab (logged-in only) moves into an overflow or is dropped from bottom bar per the new 5-slot spec; VIP page remains reachable from profile. **Confirm below.**
-- Center **floating circular Search button**: 56px, `--primary` fill, elevated shadow/glow, overlaps top edge of the bar (`-translate-y-1/2`). Opens a search overlay that focuses the existing `SearchBar` (reuses current state — no new logic).
-- Tiny text labels under the 4 standard icons; active icon + label tint in `--primary`.
+- Hook `useStoreOnDuty()` calls `is_store_on_duty()` + subscribes to `admin_shifts` realtime.
+- `useActiveAdmin()` calls `get_active_admin()` for payment info.
+- In `ProductsPage` / `CheckoutPage`: when off-duty, disable Player ID/Server inputs, hide proceed buttons, show overlay "نحن خارج أوقات العمل حالياً" + operational hours.
+- Checkout page: replace static Vodafone/InstaPay numbers with active admin's values.
 
-## 7. Styling polish
-- Standardize 16–20px page padding (`px-4` → `px-5` where appropriate).
-- Tap states: `active:scale-95`, focus rings in `--primary/40`.
-- Typography: keep Rajdhani/Cairo; bump contrast on muted text for legibility on the darker background.
+## 4. Files
 
-## Files touched
-- `src/index.css` — background token + minor utility tweaks
-- `src/pages/Index.tsx` — sticky header, layout padding, profile avatar
-- `src/components/PromoBanner.tsx` — convert to carousel
-- `src/components/CategoryFilter.tsx` — underline tab style
-- `src/components/GameGrid.tsx` — card restyle, badge color
-- `src/components/BottomNav.tsx` — 5-slot nav + floating search button
-- `src/lib/gameData.ts` — reorder games (MLBB, HOK first); no field changes
+**New:**
+- `supabase/migrations/<ts>_admin_shifts.sql`
+- `src/hooks/useStoreOnDuty.ts`
+- `src/hooks/useActiveAdmin.ts`
+- `src/hooks/useCurrentShift.ts`
+- `src/pages/admin/AdminControlPage.tsx`
+- `src/pages/admin/AdminWorkHistoryPage.tsx`
+- `src/components/admin/OpenShiftDialog.tsx`
+- `src/components/admin/CloseShiftDialog.tsx`
+- `src/components/admin/HandoverDialog.tsx`
 
-## Out of scope
-- No new routes, tables, RPCs, or auth changes.
-- No new translations beyond reusing existing keys.
-- No changes to admin, staff, VIP, checkout, or auth flows.
+**Edited:**
+- `src/App.tsx` — new routes under `/admin`.
+- `src/components/AdminBottomNav.tsx` — add Control link.
+- `src/pages/admin/AdminProfilePage.tsx` — profile editor + vault key + history link.
+- `src/pages/CheckoutPage.tsx` — dynamic admin payment info + off-duty guard.
+- `src/pages/ProductsPage.tsx` — off-duty disables inputs + proceed button.
 
-## One question before I build
-The new bottom bar spec has exactly 5 slots (Home, Game, Search, Messages, Profile) and doesn't include VIP. Two options:
-- **A:** Drop VIP from the bottom bar entirely; access VIP from the Profile page (cleanest, matches reference).
-- **B:** Keep VIP as a 6th slot for logged-in users (breaks the symmetric 5-slot look).
-
-I'll default to **A** unless you say otherwise.
+## Notes
+- Vault key stored as SHA-256 hash (via `digest` from `pgcrypto`) — never returned to clients.
+- All financial RPCs require role admin/owner and valid vault key.
+- Single active shift invariant enforced via partial unique index on `admin_shifts(status) WHERE status='open'`.
