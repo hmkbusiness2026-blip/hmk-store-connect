@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Globe } from 'lucide-react';
-import { games, arabicServers } from '@/lib/gameData';
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Globe, MessageCircle } from 'lucide-react';
+import { games, getServersForGame } from '@/lib/gameData';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Carousel, CarouselContent, CarouselItem, CarouselApi } from '@/components/ui/carousel';
+import { WA_NUMBER } from '@/lib/validation';
 import bannerImg from '@/assets/mlbb-naruto-banner.jpg';
 import hokImg from '@/assets/game-hok.jpg';
 import mlbbImg from '@/assets/game-mlbb.jpg';
@@ -35,6 +36,12 @@ const GamePage = () => {
   }
 
   const BackIcon = lang === 'ar' ? ArrowRight : ArrowLeft;
+  const servers = getServersForGame(game.id);
+  const isHOK = game.id === 'hok';
+
+  const hokInquiryUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(
+    'مرحبا انا ارغب بشحن لعبة honor of kings وعايز استفسر عن سيرفري'
+  )}`;
 
   return (
     <div className="min-h-screen pb-24">
@@ -55,7 +62,6 @@ const GamePage = () => {
       </header>
 
       <div className="px-5 pt-4 space-y-6 max-w-lg mx-auto">
-        {/* Carousel with arrows */}
         <div className="relative">
           <Carousel setApi={setApi} opts={{ loop: true }} className="overflow-hidden rounded-2xl">
             <CarouselContent>
@@ -99,13 +105,12 @@ const GamePage = () => {
           </div>
         </div>
 
-        {/* Server selection */}
         <div>
           <h2 className="font-display font-extrabold text-base text-foreground mb-3">
             {lang === 'ar' ? 'اختر السيرفر' : 'Choose Server'}
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {arabicServers.map((s) => (
+          <div className={`grid gap-3 ${isHOK ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-3'}`}>
+            {servers.map((s) => (
               <button
                 key={s.id}
                 onClick={() => navigate(`/game/${game.id}/${s.id}`)}
@@ -120,6 +125,18 @@ const GamePage = () => {
               </button>
             ))}
           </div>
+
+          {isHOK && (
+            <a
+              href={hokInquiryUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-display font-bold text-sm bg-[#25D366] text-white shadow-[0_8px_24px_-8px_rgba(37,211,102,0.6)] active:scale-[0.98] transition-transform"
+            >
+              <MessageCircle size={18} />
+              {lang === 'ar' ? 'الاستفسار عن سيرفري في اللعبة' : 'Inquire about my server'}
+            </a>
+          )}
         </div>
       </div>
     </div>

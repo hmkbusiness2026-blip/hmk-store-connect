@@ -1,10 +1,12 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Minus, Plus, Gem, LogIn, Clock } from 'lucide-react';
-import { games, arabicServers, mlbbPackages, type PackageItem } from '@/lib/gameData';
+import { games, arabicServers, hokServers, mlbbPackages, type PackageItem } from '@/lib/gameData';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStoreOnDuty } from '@/hooks/useStoreOnDuty';
+import { supabase } from '@/integrations/supabase/client';
+import { onlyDigits } from '@/lib/validation';
 
 interface CartItem extends PackageItem {
   qty: number;
@@ -17,13 +19,31 @@ const ProductsPage = () => {
   const { user } = useAuth();
   const { onDuty } = useStoreOnDuty();
   const game = games.find((g) => g.id === gameId);
-  const server = arabicServers.find((s) => s.id === serverId);
+  const serverList = gameId === 'hok' ? hokServers : arabicServers;
+  const server = serverList.find((s) => s.id === serverId);
 
   const [cart, setCart] = useState<Record<string, CartItem>>({});
   const [playerId, setPlayerId] = useState('');
   const [serverNum, setServerNum] = useState('');
+  const [productImages, setProductImages] = useState<Record<string, string>>({});
 
   const allPackages = useMemo(() => mlbbPackages.flatMap((c) => c.packages), []);
+
+  useEffect(() => {
+    if (!gameId) return;
+    supabase
+      .from('product_images')
+      .select('package_id, image_url')
+      .eq('game_id', gameId)
+      .then(({ data }) => {
+        const map: Record<string, string> = {};
+        (data || []).forEach((r: any) => {
+          map[r.package_id ?? '__default__'] = r.image_url;
+        });
+        setProductImages(map);
+      });
+  }, [gameId]);
+
 
   const totalPrice = useMemo(
     () => Object.values(cart).reduce((sum, i) => sum + i.price * i.qty, 0),
