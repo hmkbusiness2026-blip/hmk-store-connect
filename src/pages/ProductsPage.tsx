@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Minus, Plus, Gem } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Minus, Plus, Gem, LogIn } from 'lucide-react';
 import { games, arabicServers, mlbbPackages, type PackageItem } from '@/lib/gameData';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface CartItem extends PackageItem {
   qty: number;
@@ -12,6 +13,7 @@ const ProductsPage = () => {
   const { gameId, serverId } = useParams();
   const navigate = useNavigate();
   const { lang } = useLanguage();
+  const { user } = useAuth();
   const game = games.find((g) => g.id === gameId);
   const server = arabicServers.find((s) => s.id === serverId);
 
@@ -172,64 +174,86 @@ const ProductsPage = () => {
           </div>
         </div>
 
-        {/* Player info form */}
-        <div className="glass-card p-4 rounded-2xl space-y-3">
-          <div>
-            <label className="text-xs font-display font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">
-              {lang === 'ar' ? 'الايدي' : 'Player ID'}
-            </label>
-            <input
-              type="text"
-              inputMode="numeric"
-              placeholder="123456780"
-              value={playerId}
-              onChange={(e) => setPlayerId(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-md bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-            />
-          </div>
-          <div>
-            <label className="text-xs font-display font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">
-              {lang === 'ar' ? 'السيرفر' : 'Server'}
-            </label>
-            <input
-              type="text"
-              inputMode="numeric"
-              placeholder="1234"
-              value={serverNum}
-              onChange={(e) => setServerNum(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-md bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-            />
-          </div>
-        </div>
+        {user ? (
+          <>
+            {/* Player info form */}
+            <div className="glass-card p-4 rounded-2xl space-y-3">
+              <div>
+                <label className="text-xs font-display font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">
+                  {lang === 'ar' ? 'الايدي' : 'Player ID'}
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="123456780"
+                  value={playerId}
+                  onChange={(e) => setPlayerId(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-md bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-display font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">
+                  {lang === 'ar' ? 'السيرفر' : 'Server'}
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="1234"
+                  value={serverNum}
+                  onChange={(e) => setServerNum(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-md bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+            </div>
 
-        {/* Continue button below player info form */}
-        <button
-          disabled={!canCheckout}
-          onClick={handleCheckout}
-          className="w-full py-3.5 rounded-2xl font-display font-extrabold text-base bg-primary text-primary-foreground shadow-[0_8px_24px_-8px_hsl(var(--primary)/0.6)] disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-transform"
-        >
-          {lang === 'ar' ? 'متابعة' : 'Continue'}
-        </button>
-      </div>
-
-      {/* Sticky bottom action */}
-      <div className="fixed bottom-0 inset-x-0 z-30 glass border-t border-border/60 px-5 py-3">
-        <div className="max-w-lg mx-auto flex items-center justify-between gap-3">
-          <div className="text-end">
-            <p className="text-[10px] font-display uppercase tracking-wider text-muted-foreground">
-              {lang === 'ar' ? 'الإجمالي' : 'Total'}
-            </p>
-            <p className="font-display font-extrabold text-lg text-primary">{totalPrice} EGP</p>
-          </div>
+            <button
+              disabled={!canCheckout}
+              onClick={handleCheckout}
+              className="w-full py-3.5 rounded-2xl font-display font-extrabold text-base bg-primary text-primary-foreground shadow-[0_8px_24px_-8px_hsl(var(--primary)/0.6)] disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-transform"
+            >
+              {lang === 'ar' ? 'متابعة' : 'Continue'}
+            </button>
+          </>
+        ) : (
           <button
-            disabled={!canCheckout}
-            onClick={handleCheckout}
-            className="flex-1 py-3 rounded-full font-display font-extrabold text-sm bg-primary text-primary-foreground shadow-[0_8px_24px_-8px_hsl(var(--primary)/0.6)] disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-transform"
+            onClick={() => navigate('/auth')}
+            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-display font-extrabold text-base bg-primary text-primary-foreground shadow-[0_8px_24px_-8px_hsl(var(--primary)/0.6)] active:scale-[0.98] transition-transform"
           >
-            {lang === 'ar' ? 'الاكمال للدفع' : 'Proceed to Payment'}
+            <LogIn size={18} />
+            {lang === 'ar' ? 'تسجيل الدخول لإكمال الدفع' : 'Login to proceed to payment'}
           </button>
-        </div>
+        )}
       </div>
+
+      {/* Sticky bottom total (always visible when items selected) */}
+      {totalItems > 0 && (
+        <div className="fixed bottom-0 inset-x-0 z-30 glass border-t border-border/60 px-5 py-3">
+          <div className="max-w-lg mx-auto flex items-center justify-between gap-3">
+            <div className="text-end">
+              <p className="text-[10px] font-display uppercase tracking-wider text-muted-foreground">
+                {lang === 'ar' ? 'الإجمالي' : 'Total'}
+              </p>
+              <p className="font-display font-extrabold text-lg text-primary">{totalPrice} EGP</p>
+            </div>
+            {user ? (
+              <button
+                disabled={!canCheckout}
+                onClick={handleCheckout}
+                className="flex-1 py-3 rounded-full font-display font-extrabold text-sm bg-primary text-primary-foreground shadow-[0_8px_24px_-8px_hsl(var(--primary)/0.6)] disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-transform"
+              >
+                {lang === 'ar' ? 'الاكمال للدفع' : 'Proceed to Payment'}
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate('/auth')}
+                className="flex-1 py-3 rounded-full font-display font-extrabold text-sm bg-primary text-primary-foreground shadow-[0_8px_24px_-8px_hsl(var(--primary)/0.6)] active:scale-[0.98] transition-transform"
+              >
+                {lang === 'ar' ? 'تسجيل الدخول' : 'Login'}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

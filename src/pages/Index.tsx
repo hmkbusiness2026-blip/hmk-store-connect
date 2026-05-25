@@ -4,12 +4,12 @@ import PromoBanner from '@/components/PromoBanner';
 import GameGrid from '@/components/GameGrid';
 import CheckoutFlow from '@/components/CheckoutFlow';
 import SearchBar from '@/components/SearchBar';
-import CategoryFilter from '@/components/CategoryFilter';
 import ReviewsCarousel from '@/components/ReviewsCarousel';
 import SocialLinks from '@/components/SocialLinks';
 import AppFooter from '@/components/AppFooter';
 import NotificationBell from '@/components/NotificationBell';
 import FavoriteGameModal from '@/components/FavoriteGameModal';
+import PWAInstallButton from '@/components/PWAInstallButton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { AnimatePresence } from 'framer-motion';
@@ -19,7 +19,6 @@ import hmkLogo from '@/assets/hmk-logo.png';
 const Index = () => {
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [category, setCategory] = useState('all');
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, userRole, favoriteGame, setFavoriteGame, loading } = useAuth();
   const { t, lang, toggleLang } = useLanguage();
@@ -37,7 +36,9 @@ const Index = () => {
     }
   }, [searchParams, setSearchParams]);
 
-  const showOnboarding = !!user && !loading && favoriteGame === null;
+  const onboardingKey = user ? `hmk_onboarded_${user.id}` : '';
+  const alreadyOnboarded = onboardingKey ? localStorage.getItem(onboardingKey) === '1' : false;
+  const showOnboarding = !!user && !loading && favoriteGame === null && !alreadyOnboarded;
 
   return (
     <div className="min-h-screen pb-24">
@@ -81,13 +82,14 @@ const Index = () => {
       <PromoBanner />
 
       <SearchBar value={searchQuery} onChange={setSearchQuery} />
-      <CategoryFilter selected={category} onChange={setCategory} />
+
+      <PWAInstallButton />
 
       <div>
-        <h2 className="font-display font-semibold text-sm uppercase tracking-wider text-muted-foreground mb-3">
-          {t('topUpGames')}
+        <h2 className="font-display font-extrabold text-base text-foreground mb-3">
+          {lang === 'ar' ? 'شحن العاب الموبايل' : 'Mobile Game Top-up'}
         </h2>
-        <GameGrid onSelectGame={(id) => navigate(`/game/${id}`)} searchQuery={searchQuery} category={category} />
+        <GameGrid onSelectGame={(id) => navigate(`/game/${id}`)} searchQuery={searchQuery} category="all" />
       </div>
 
       <ReviewsCarousel />
@@ -105,8 +107,13 @@ const Index = () => {
 
       <FavoriteGameModal
         open={showOnboarding}
+        dismissible
+        onClose={() => {
+          if (onboardingKey) localStorage.setItem(onboardingKey, '1');
+        }}
         onSelect={async (id) => {
           await setFavoriteGame(id);
+          if (onboardingKey) localStorage.setItem(onboardingKey, '1');
         }}
       />
     </div>
