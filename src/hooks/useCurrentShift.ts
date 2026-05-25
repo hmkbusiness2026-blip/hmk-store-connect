@@ -25,6 +25,8 @@ export interface HandoverRow {
   created_at: string;
 }
 
+const sb = supabase as any;
+
 export const useCurrentShift = () => {
   const { user } = useAuth();
   const [myOpenShift, setMyOpenShift] = useState<Shift | null>(null);
@@ -34,28 +36,16 @@ export const useCurrentShift = () => {
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
-    const { data: shifts } = await supabase
-      .from('admin_shifts' as any)
-      .select('*')
-      .eq('status', 'open')
-      .limit(1);
+    const { data: shifts } = await sb.from('admin_shifts').select('*').eq('status', 'open').limit(1);
     const open = (shifts?.[0] ?? null) as Shift | null;
     setAnyOpenShift(open);
     setMyOpenShift(open && user && open.admin_id === user.id ? open : null);
 
     if (user) {
-      const { data: incoming } = await supabase
-        .from('shift_handovers' as any)
-        .select('*')
-        .eq('to_admin', user.id)
-        .eq('status', 'pending');
-      setPendingIncoming((incoming as any) ?? []);
-      const { data: outgoing } = await supabase
-        .from('shift_handovers' as any)
-        .select('*')
-        .eq('from_admin', user.id)
-        .eq('status', 'pending');
-      setPendingOutgoing((outgoing as any) ?? []);
+      const { data: incoming } = await sb.from('shift_handovers').select('*').eq('to_admin', user.id).eq('status', 'pending');
+      setPendingIncoming((incoming as HandoverRow[]) ?? []);
+      const { data: outgoing } = await sb.from('shift_handovers').select('*').eq('from_admin', user.id).eq('status', 'pending');
+      setPendingOutgoing((outgoing as HandoverRow[]) ?? []);
     }
     setLoading(false);
   }, [user]);
