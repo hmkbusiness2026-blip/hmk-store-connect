@@ -11,6 +11,8 @@ interface AuthContextType {
   userRole: UserRole;
   phoneNumber: string | null;
   totalDiamonds: number;
+  favoriteGame: string | null;
+  setFavoriteGame: (gameId: string) => Promise<void>;
   signUp: (phone: string, password: string) => Promise<{ error: any }>;
   signIn: (phone: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -24,6 +26,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState<UserRole>(null);
   const [totalDiamonds, setTotalDiamonds] = useState(0);
+  const [favoriteGame, setFavoriteGameState] = useState<string | null>(null);
 
   const fetchRole = async (userId: string) => {
     const { data } = await supabase
@@ -37,10 +40,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase
       .from('profiles')
-      .select('total_diamonds')
+      .select('total_diamonds, favorite_game')
       .eq('user_id', userId)
       .single();
     setTotalDiamonds(data?.total_diamonds || 0);
+    setFavoriteGameState((data as any)?.favorite_game ?? null);
+  };
+
+  const setFavoriteGame = async (gameId: string) => {
+    if (!user) return;
+    setFavoriteGameState(gameId);
+    await supabase.from('profiles').update({ favorite_game: gameId } as any).eq('user_id', user.id);
   };
 
   useEffect(() => {
@@ -119,7 +129,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const phoneNumber = user?.email?.replace('@hmkstore.com', '') || user?.phone || null;
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, userRole, phoneNumber, totalDiamonds, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, userRole, phoneNumber, totalDiamonds, favoriteGame, setFavoriteGame, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
