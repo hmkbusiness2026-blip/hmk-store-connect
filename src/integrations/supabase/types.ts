@@ -20,6 +20,7 @@ export type Database = {
           full_name: string | null
           id: string
           instapay_id: string | null
+          transfer_number: string | null
           updated_at: string
           user_id: string
           vault_key_hash: string | null
@@ -30,6 +31,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           instapay_id?: string | null
+          transfer_number?: string | null
           updated_at?: string
           user_id: string
           vault_key_hash?: string | null
@@ -40,6 +42,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           instapay_id?: string | null
+          transfer_number?: string | null
           updated_at?: string
           user_id?: string
           vault_key_hash?: string | null
@@ -879,6 +882,57 @@ export type Database = {
         }
         Returns: string
       }
+      owner_admin_performance: {
+        Args: never
+        Returns: {
+          accepted: number
+          admin_id: string
+          full_name: string
+          rejected: number
+          success_rate: number
+        }[]
+      }
+      owner_admin_shift_history: {
+        Args: { _admin_id: string }
+        Returns: {
+          closed_at: string
+          end_instapay: number
+          end_smile: number
+          end_wallet: number
+          id: string
+          opened_at: string
+          start_instapay: number
+          start_smile: number
+          start_wallet: number
+          status: string
+        }[]
+      }
+      owner_list_all_admins: {
+        Args: never
+        Returns: {
+          full_name: string
+          role: string
+          user_id: string
+        }[]
+      }
+      owner_product_stats: {
+        Args: never
+        Returns: {
+          game_name: string
+          orders_count: number
+          package_name: string
+          revenue: number
+        }[]
+      }
+      owner_today_stats: {
+        Args: never
+        Returns: {
+          active_admin_id: string
+          active_admin_name: string
+          orders_today: number
+          revenue_today: number
+        }[]
+      }
       record_failed_login: {
         Args: { _phone: string }
         Returns: {
@@ -908,6 +962,10 @@ export type Database = {
       set_vault_key: { Args: { _key: string }; Returns: undefined }
       update_admin_profile: {
         Args: { _full_name: string; _instapay: string; _vodafone: string }
+        Returns: undefined
+      }
+      update_owner_transfer_number: {
+        Args: { _transfer_number: string }
         Returns: undefined
       }
       verify_vault_key: {
