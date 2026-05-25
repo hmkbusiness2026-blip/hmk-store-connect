@@ -11,6 +11,8 @@ interface AuthContextType {
   userRole: UserRole;
   phoneNumber: string | null;
   totalDiamonds: number;
+  favoriteGame: string | null;
+  setFavoriteGame: (gameId: string) => Promise<void>;
   signUp: (phone: string, password: string) => Promise<{ error: any }>;
   signIn: (phone: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
