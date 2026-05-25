@@ -18,6 +18,8 @@ const AuthPage = () => {
   const { t, lang } = useLanguage();
   const { toast } = useToast();
 
+  const navigate = useNavigate();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!phone || !password) return;
@@ -29,8 +31,8 @@ const AuthPage = () => {
     if (error) {
       toast({ title: t('error'), description: error.message, variant: 'destructive' });
     } else if (!isLogin && !isStaffMode) {
-      toast({ title: t('accountCreated'), description: t('canSignIn') });
-      setIsLogin(true);
+      toast({ title: t('accountCreated'), description: lang === 'ar' ? 'تم تسجيل الدخول تلقائياً' : 'Signed in automatically' });
+      navigate('/', { replace: true });
     }
   };
 
