@@ -20,6 +20,8 @@ import AdminOrdersPage from "./pages/admin/AdminOrdersPage";
 import AdminOrderDetail from "./pages/admin/AdminOrderDetail";
 import AdminArchivePage from "./pages/admin/AdminArchivePage";
 import AdminProfilePage from "./pages/admin/AdminProfilePage";
+import AdminControlPage from "./pages/admin/AdminControlPage";
+import AdminWorkHistoryPage from "./pages/admin/AdminWorkHistoryPage";
 import OwnerPage from "./pages/OwnerPage";
 import AdminCustomize from "./pages/AdminCustomize";
 import NotFound from "./pages/NotFound";
@@ -80,6 +82,8 @@ const AppContent = () => {
           <Route path="orders/:id" element={<AdminOrderDetail />} />
           <Route path="archive" element={<AdminArchivePage />} />
           <Route path="profile" element={<AdminProfilePage />} />
+          <Route path="control" element={<AdminControlPage />} />
+          <Route path="history" element={<AdminWorkHistoryPage />} />
         </Route>
         <Route path="/admin/customize" element={user ? <AdminCustomize /> : <AuthPage />} />
         <Route path="/admin/legacy" element={user ? <AdminPage /> : <AuthPage />} />

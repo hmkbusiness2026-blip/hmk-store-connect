@@ -1,8 +1,9 @@
-import { ClipboardList, Archive, User, Zap } from 'lucide-react';
+import { ClipboardList, Archive, User, Zap, SlidersHorizontal } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 
 const items = [
   { to: '/admin/orders', label: 'الطلبات', icon: ClipboardList },
+  { to: '/admin/control', label: 'التحكم', icon: SlidersHorizontal },
   { to: '/admin/archive', label: 'الأرشيف', icon: Archive },
   { to: '/admin/profile', label: 'البروفايل', icon: User },
 ];
