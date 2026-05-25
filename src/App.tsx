@@ -58,6 +58,9 @@ const AppContent = () => {
     <>
       <Routes>
         <Route path="/" element={<Index />} />
+        <Route path="/game/:gameId" element={<GamePage />} />
+        <Route path="/game/:gameId/:serverId" element={<ProductsPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/orders" element={user ? <OrdersPage /> : <AuthPage />} />
         <Route path="/vip" element={user ? <VipPage /> : <AuthPage />} />
