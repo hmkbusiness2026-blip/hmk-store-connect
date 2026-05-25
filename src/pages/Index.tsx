@@ -80,13 +80,14 @@ const Index = () => {
       <PromoBanner />
 
       <SearchBar value={searchQuery} onChange={setSearchQuery} />
-      <CategoryFilter selected={category} onChange={setCategory} />
+
+      <PWAInstallButton />
 
       <div>
-        <h2 className="font-display font-semibold text-sm uppercase tracking-wider text-muted-foreground mb-3">
-          {t('topUpGames')}
+        <h2 className="font-display font-extrabold text-base text-foreground mb-3">
+          {lang === 'ar' ? 'شحن العاب الموبايل' : 'Mobile Game Top-up'}
         </h2>
-        <GameGrid onSelectGame={(id) => navigate(`/game/${id}`)} searchQuery={searchQuery} category={category} />
+        <GameGrid onSelectGame={(id) => navigate(`/game/${id}`)} searchQuery={searchQuery} category="all" />
       </div>
 
       <ReviewsCarousel />
