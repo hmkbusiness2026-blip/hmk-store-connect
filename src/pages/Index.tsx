@@ -36,7 +36,9 @@ const Index = () => {
     }
   }, [searchParams, setSearchParams]);
 
-  const showOnboarding = !!user && !loading && favoriteGame === null;
+  const onboardingKey = user ? `hmk_onboarded_${user.id}` : '';
+  const alreadyOnboarded = onboardingKey ? localStorage.getItem(onboardingKey) === '1' : false;
+  const showOnboarding = !!user && !loading && favoriteGame === null && !alreadyOnboarded;
 
   return (
     <div className="min-h-screen pb-24">
