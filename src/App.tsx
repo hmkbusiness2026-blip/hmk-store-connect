@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -15,6 +15,11 @@ import OrdersPage from "./pages/OrdersPage";
 import VipPage from "./pages/VipPage";
 import ProfilePage from "./pages/ProfilePage";
 import AdminPage from "./pages/AdminPage";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminOrdersPage from "./pages/admin/AdminOrdersPage";
+import AdminOrderDetail from "./pages/admin/AdminOrderDetail";
+import AdminArchivePage from "./pages/admin/AdminArchivePage";
+import AdminProfilePage from "./pages/admin/AdminProfilePage";
 import OwnerPage from "./pages/OwnerPage";
 import AdminCustomize from "./pages/AdminCustomize";
 import NotFound from "./pages/NotFound";
@@ -43,7 +48,8 @@ const StaffGuard = ({ children }: { children: JSX.Element }) => {
 const queryClient = new QueryClient();
 
 const AppContent = () => {
-  const { user, loading } = useAuth();
+  const { user, userRole, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -54,6 +60,9 @@ const AppContent = () => {
     );
   }
 
+  const isAdmin = userRole === 'admin' || (userRole as string) === 'owner';
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
   return (
     <>
       <Routes>
@@ -61,12 +70,19 @@ const AppContent = () => {
         <Route path="/game/:gameId" element={<GamePage />} />
         <Route path="/game/:gameId/:serverId" element={<ProductsPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
-        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/auth" element={user ? <Navigate to={isAdmin ? "/admin/orders" : "/"} replace /> : <AuthPage />} />
         <Route path="/orders" element={user ? <OrdersPage /> : <AuthPage />} />
         <Route path="/vip" element={user ? <VipPage /> : <AuthPage />} />
         <Route path="/profile" element={user ? <ProfilePage /> : <AuthPage />} />
-        <Route path="/admin" element={user ? <AdminPage /> : <AuthPage />} />
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<Navigate to="/admin/orders" replace />} />
+          <Route path="orders" element={<AdminOrdersPage />} />
+          <Route path="orders/:id" element={<AdminOrderDetail />} />
+          <Route path="archive" element={<AdminArchivePage />} />
+          <Route path="profile" element={<AdminProfilePage />} />
+        </Route>
         <Route path="/admin/customize" element={user ? <AdminCustomize /> : <AuthPage />} />
+        <Route path="/admin/legacy" element={user ? <AdminPage /> : <AuthPage />} />
         <Route path="/owner" element={user ? <OwnerPage /> : <AuthPage />} />
         <Route path="/staff" element={<StaffGuard><StaffLayout /></StaffGuard>}>
           <Route index element={<Navigate to="/staff/dashboard" replace />} />
@@ -82,8 +98,8 @@ const AppContent = () => {
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
-      <BottomNav />
-      <WhatsAppButton />
+      {!isAdminRoute && <BottomNav />}
+      {!isAdminRoute && <WhatsAppButton />}
     </>
   );
 };
