@@ -263,6 +263,7 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          favorite_game: string | null
           id: string
           phone: string | null
           total_diamonds: number
@@ -270,6 +271,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          favorite_game?: string | null
           id?: string
           phone?: string | null
           total_diamonds?: number
@@ -277,6 +279,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          favorite_game?: string | null
           id?: string
           phone?: string | null
           total_diamonds?: number
