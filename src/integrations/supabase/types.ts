@@ -416,6 +416,75 @@ export type Database = {
         }
         Relationships: []
       }
+      pro_articles: {
+        Row: {
+          content: string
+          cover_url: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          published: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content?: string
+          cover_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          published?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          cover_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          published?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pro_emote_codes: {
+        Row: {
+          active: boolean
+          admin_notes: string | null
+          code: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          image_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          admin_notes?: string | null
+          code: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          image_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          admin_notes?: string | null
+          code?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          image_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       product_images: {
         Row: {
           created_at: string
@@ -759,6 +828,17 @@ export type Database = {
           full_name: string
           instapay_id: string
           vodafone_cash: string
+        }[]
+      }
+      get_pro_status: {
+        Args: never
+        Returns: {
+          days_remaining: number
+          duration_days: number
+          expires_at: string
+          is_pro: boolean
+          tier: string
+          total_spent: number
         }[]
       }
       has_role: {
