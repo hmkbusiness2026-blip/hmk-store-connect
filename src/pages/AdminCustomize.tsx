@@ -70,6 +70,18 @@ const AdminCustomize = () => {
     return m;
   }, [config]);
 
+  const currentBannerTitles = useMemo(() => {
+    const m: Record<string, string> = {};
+    SLIDE_KEYS.forEach((k) => { m[k] = config[`${k}_title`] || ''; });
+    return m;
+  }, [config]);
+
+  const currentBannerSubtitles = useMemo(() => {
+    const m: Record<string, string> = {};
+    SLIDE_KEYS.forEach((k) => { m[k] = config[`${k}_subtitle`] || ''; });
+    return m;
+  }, [config]);
+
   if (!isAuthorized) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 pb-20">
