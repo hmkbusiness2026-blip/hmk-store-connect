@@ -15,7 +15,7 @@ interface Slide {
   btnText: string;
 }
 
-const SLIDE_IDS = ['1', '2', '3', '4'];
+const SLIDE_IDS = ['1', '2', '3', '4', '5', '6', '7'];
 
 const FIRST_TIME_FALLBACK: Record<BannerScope, { img: string } | null> = {
   home: { img: bannerImg },
