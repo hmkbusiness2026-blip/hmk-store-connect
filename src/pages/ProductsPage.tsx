@@ -150,13 +150,27 @@ const ProductsPage = () => {
 
         {/* Products grid */}
         <div>
-          <h3 className="font-display font-bold text-sm text-foreground mb-3">
-            {lang === 'ar' ? 'اختر الباقات' : 'Choose Packages'}
-          </h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-display font-bold text-sm text-foreground">
+              {lang === 'ar' ? 'اختر الباقات' : 'Choose Packages'}
+            </h3>
+            {isOwner && (
+              <button
+                type="button"
+                onClick={() => setManagerOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/15 text-primary border border-primary/40 text-[11px] font-display font-bold hover:bg-primary/25 transition"
+              >
+                <Pencil size={12} />
+                تعديل المنتجات
+              </button>
+            )}
+          </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {allPackages.map((pkg) => {
               const inCart = cart[pkg.id];
               const img = productImages[pkg.id] || productImages['__default__'];
+              const displayName = productNames[pkg.id] ?? (pkg.diamonds ?? pkg.name);
+              const displayPrice = productPrices[pkg.id] ?? pkg.price;
               return (
                 <button
                   key={pkg.id}
@@ -180,10 +194,10 @@ const ProductsPage = () => {
                     )}
                   </div>
                   <span className="font-display font-bold text-sm text-foreground text-center">
-                    {pkg.diamonds ?? pkg.name}
+                    {displayName}
                   </span>
-                  <span className="w-full text-start text-xs font-display font-bold text-primary mt-1">
-                    {pkg.price} EGP
+                  <span dir="ltr" className="w-full text-left text-xs font-display font-bold text-primary mt-1">
+                    {displayPrice} EGP
                   </span>
 
 
@@ -216,6 +230,37 @@ const ProductsPage = () => {
             })}
           </div>
         </div>
+
+        {isOwner && gameId && (
+          <ProductsManagerDialog
+            open={managerOpen}
+            onClose={() => setManagerOpen(false)}
+            gameId={gameId}
+            onSavedAll={(summary) => {
+              setProductImages((prev) => {
+                const next = { ...prev };
+                Object.entries(summary).forEach(([id, v]) => {
+                  if (v.image_url !== undefined) next[id] = v.image_url;
+                });
+                return next;
+              });
+              setProductNames((prev) => {
+                const next = { ...prev };
+                Object.entries(summary).forEach(([id, v]) => {
+                  if (v.display_name != null) next[id] = v.display_name as string;
+                });
+                return next;
+              });
+              setProductPrices((prev) => {
+                const next = { ...prev };
+                Object.entries(summary).forEach(([id, v]) => {
+                  if (v.price != null) next[id] = v.price as number;
+                });
+                return next;
+              });
+            }}
+          />
+        )}
 
         {onDuty === false && (
           <div className="glass-card p-4 rounded-2xl border border-destructive/40 flex items-start gap-3">
