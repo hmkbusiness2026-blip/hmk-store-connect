@@ -111,8 +111,12 @@ Deno.serve(async (req) => {
       return json({ ok: true });
     }
     case "handover_ack": {
-      await s.from("handovers").update({ acknowledged_at: new Date().toISOString(), to_user: userId }).in("id", ids);
-      return json({ ok: true });
+      if (!ids.length) return json({ error: "No handover ids" }, 400);
+      const { data: rows } = await s.from("handovers").select("id,to_user").in("id", ids);
+      const allowed = (rows ?? []).filter((r: any) => r.to_user === userId).map((r: any) => r.id);
+      if (!allowed.length) return json({ error: "Not your handover" }, 403);
+      await s.from("handovers").update({ acknowledged_at: new Date().toISOString(), to_user: userId }).in("id", allowed);
+      return json({ ok: true, count: allowed.length });
     }
     case "message_assign": {
       await s.from("messages").update({ assigned_to: payload.assigned_to ?? userId, status: "open" }).in("id", ids);

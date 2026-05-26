@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
+import DOMPurify from 'dompurify';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProStatus } from '@/hooks/useProStatus';
@@ -39,10 +40,21 @@ const ProArticleDetailPage = () => {
     };
   }, []);
 
+  const sanitizedHtml = useMemo(
+    () =>
+      DOMPurify.sanitize(article?.content || '', {
+        ALLOWED_TAGS: ['p','br','b','strong','i','em','u','s','h1','h2','h3','h4','ul','ol','li','blockquote','code','pre','a','img','table','thead','tbody','tr','th','td','span','div','hr'],
+        ALLOWED_ATTR: ['href','src','alt','title','target','rel','colspan','rowspan','class','style'],
+        ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel|data:image\/):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+      }),
+    [article?.content]
+  );
+
   if (!statusLoading && !status.is_pro) {
     navigate('/pro', { replace: true });
     return null;
   }
+
 
   return (
     <div className="min-h-screen pb-20 px-4 pt-4 max-w-lg mx-auto relative select-none" dir="rtl"
@@ -63,7 +75,7 @@ const ProArticleDetailPage = () => {
           )}
           <div
             className="prose prose-invert max-w-none text-sm text-foreground [&_table]:w-full [&_table]:border-collapse [&_th]:border [&_td]:border [&_th]:p-2 [&_td]:p-2 [&_th]:border-border [&_td]:border-border [&_img]:rounded-lg [&_img]:pointer-events-none"
-            dangerouslySetInnerHTML={{ __html: article.content || '' }}
+            dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
           />
         </article>
       )}
