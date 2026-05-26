@@ -33,12 +33,15 @@ const BannersManagerDialog = ({
   open,
   onClose,
   slideKeys,
+  keyForRow,
   currentImages,
   currentTitles = {},
   currentSubtitles = {},
   onSavedAll,
 }: Props) => {
   const { toast } = useToast();
+  const resolveKey = (rowKey: string, suffix?: 'title' | 'subtitle') =>
+    keyForRow ? keyForRow(rowKey, suffix) : suffix ? `${rowKey}_${suffix}` : rowKey;
   const [rows, setRows] = useState<SlideRow[]>([]);
   const [saving, setSaving] = useState(false);
 
