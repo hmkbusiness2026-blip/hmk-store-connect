@@ -75,7 +75,7 @@ const ProArticleDetailPage = () => {
           )}
           <div
             className="prose prose-invert max-w-none text-sm text-foreground [&_table]:w-full [&_table]:border-collapse [&_th]:border [&_td]:border [&_th]:p-2 [&_td]:p-2 [&_th]:border-border [&_td]:border-border [&_img]:rounded-lg [&_img]:pointer-events-none"
-            dangerouslySetInnerHTML={{ __html: article.content || '' }}
+            dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
           />
         </article>
       )}
