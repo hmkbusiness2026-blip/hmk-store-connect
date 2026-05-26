@@ -120,6 +120,7 @@ const BannersManagerDialog = ({
         payload.push({ key: resolveKey(r.key, 'title'), value: r.title ?? '', updated_at: now });
         payload.push({ key: resolveKey(r.key, 'subtitle'), value: r.subtitle ?? '', updated_at: now });
       });
+      console.log('[banners] saving payload:', payload.filter(p => !p.key.endsWith('_title') && !p.key.endsWith('_subtitle')));
       const { error } = await supabase
         .from('site_config')
         .upsert(payload, { onConflict: 'key' });
