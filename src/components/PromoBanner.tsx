@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Pencil } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Pencil, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Carousel, CarouselContent, CarouselItem, CarouselApi } from '@/components/ui/carousel';
@@ -95,15 +95,28 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
   }, [images, titles, subtitles, scope]);
 
   const hasMultiple = slides.length > 1;
+  const autoplayRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const startAutoplay = useCallback(() => {
+    if (!api || !hasMultiple) return;
+    if (autoplayRef.current) clearInterval(autoplayRef.current);
+    autoplayRef.current = setInterval(() => api.scrollNext(), 15000);
+  }, [api, hasMultiple]);
 
   useEffect(() => {
     if (!api) return;
     const onSelect = () => setCurrent(api.selectedScrollSnap());
     api.on('select', onSelect);
-    if (!hasMultiple) return () => api.off('select', onSelect);
-    const id = setInterval(() => api.scrollNext(), 5000);
-    return () => { clearInterval(id); api.off('select', onSelect); };
-  }, [api, hasMultiple]);
+    startAutoplay();
+    return () => {
+      if (autoplayRef.current) clearInterval(autoplayRef.current);
+      api.off('select', onSelect);
+    };
+  }, [api, startAutoplay]);
+
+  const handlePrev = () => { api?.scrollPrev(); startAutoplay(); };
+  const handleNext = () => { api?.scrollNext(); startAutoplay(); };
+  const handleDot = (i: number) => { api?.scrollTo(i); startAutoplay(); };
 
   const scrollToGames = () => {
     document.getElementById('games-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -179,6 +192,26 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
               </CarouselItem>
             ))}
           </CarouselContent>
+          {hasMultiple && (
+            <>
+              <button
+                type="button"
+                onClick={handlePrev}
+                aria-label="السابق"
+                className="absolute start-2 top-1/2 -translate-y-1/2 z-20 grid place-items-center w-9 h-9 rounded-full bg-black/45 hover:bg-black/65 text-white backdrop-blur-sm border border-white/15 transition active:scale-95"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button
+                type="button"
+                onClick={handleNext}
+                aria-label="التالي"
+                className="absolute end-2 top-1/2 -translate-y-1/2 z-20 grid place-items-center w-9 h-9 rounded-full bg-black/45 hover:bg-black/65 text-white backdrop-blur-sm border border-white/15 transition active:scale-95"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </>
+          )}
         </Carousel>
       )}
 
@@ -187,7 +220,7 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
           {slides.map((_, i) => (
             <button
               key={i}
-              onClick={() => api?.scrollTo(i)}
+              onClick={() => handleDot(i)}
               aria-label={`Slide ${i + 1}`}
               className={`h-1.5 rounded-full transition-all ${
                 current === i ? 'w-6 bg-primary' : 'w-1.5 bg-muted-foreground/40'
