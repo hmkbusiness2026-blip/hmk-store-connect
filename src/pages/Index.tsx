@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import PromoBanner from '@/components/PromoBanner';
 import GameGrid from '@/components/GameGrid';
 import CheckoutFlow from '@/components/CheckoutFlow';
-import SearchBar from '@/components/SearchBar';
+
 import ReviewsCarousel from '@/components/ReviewsCarousel';
 import SocialLinks from '@/components/SocialLinks';
 import AppFooter from '@/components/AppFooter';
@@ -18,7 +18,7 @@ import hmkLogo from '@/assets/hmk-logo.png';
 
 const Index = () => {
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, userRole, favoriteGame, setFavoriteGame, loading } = useAuth();
   const { t, lang, toggleLang } = useLanguage();
@@ -87,10 +87,10 @@ const Index = () => {
         </div>
       </header>
 
-      <div className="px-5 pt-4 space-y-5 max-w-lg mx-auto">
-      <PromoBanner />
-
-      <SearchBar value={searchQuery} onChange={setSearchQuery} />
+      <div className="px-5 pt-6 pb-2 space-y-6 max-w-lg mx-auto">
+      <div className="py-2">
+        <PromoBanner />
+      </div>
 
       <PWAInstallButton />
 
@@ -98,7 +98,7 @@ const Index = () => {
         <h2 className="font-display font-extrabold text-base text-foreground mb-3">
           {lang === 'ar' ? 'شحن العاب الموبايل' : 'Mobile Game Top-up'}
         </h2>
-        <GameGrid onSelectGame={(id) => navigate(`/game/${id}`)} searchQuery={searchQuery} category="all" />
+        <GameGrid onSelectGame={(id) => navigate(`/game/${id}`)} searchQuery="" category="all" />
       </div>
 
       <ReviewsCarousel />

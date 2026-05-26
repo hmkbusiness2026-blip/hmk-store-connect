@@ -15,7 +15,7 @@ interface Slide {
   btnText: string;
 }
 
-const SLIDE_IDS = ['1', '2', '3', '4'];
+const SLIDE_IDS = ['1', '2', '3', '4', '5', '6', '7'];
 
 const FIRST_TIME_FALLBACK: Record<BannerScope, { img: string } | null> = {
   home: { img: bannerImg },
@@ -130,14 +130,18 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
         }
 
         const dist = Math.abs(diffToTarget);
-        const scale = Math.max(0.8, 1 - dist * 0.4);
-        const opacity = Math.max(0.45, 1 - dist * 1.2);
+        const sign = Math.sign(diffToTarget); // <0 = slide is to the LEFT of center
+        const scale = Math.max(0.78, 1 - dist * 0.32);
+        const opacity = Math.max(0.35, 1 - dist * 1.1);
+        const rotateY = Math.max(-35, Math.min(35, -sign * dist * 35));
+        const translateX = sign * dist * 18; // px, pulls side cards inward
         const node = slideNodes[slideIndex];
         if (node) {
-          node.style.transform = `scale(${scale})`;
+          node.style.transform = `perspective(1200px) translateX(${translateX}px) rotateY(${rotateY}deg) scale(${scale})`;
           node.style.opacity = String(opacity);
-          node.style.zIndex = dist < 0.05 ? '10' : '1';
+          node.style.zIndex = dist < 0.05 ? '10' : String(Math.max(1, 5 - Math.round(dist * 5)));
         }
+
       });
     });
   }, [embla]);
@@ -215,13 +219,15 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
 
       {slides.length > 0 && (
         <div className="relative">
-          <div ref={emblaRef} className="overflow-hidden py-4">
-            <div className="flex" style={{ touchAction: 'pan-y' }}>
+          <div ref={emblaRef} className="overflow-hidden py-6" style={{ perspective: '1200px' }}>
+            <div className="flex" style={{ touchAction: 'pan-y', transformStyle: 'preserve-3d' }}>
               {slides.map((s, i) => (
                 <div
                   key={i}
                   className="relative shrink-0 grow-0 basis-[70%] sm:basis-[55%] md:basis-[42%] lg:basis-[32%] px-2 transition-[transform,opacity] duration-300 ease-out will-change-transform"
+                  style={{ transformStyle: 'preserve-3d', backfaceVisibility: 'hidden' }}
                 >
+
                   <div
                     className="relative overflow-hidden rounded-2xl glow-gold aspect-[3/4] mx-auto"
                     style={{ backgroundColor: '#e5e7eb' }}
