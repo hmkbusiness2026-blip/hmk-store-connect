@@ -70,6 +70,18 @@ const AdminCustomize = () => {
     return m;
   }, [config]);
 
+  const currentBannerTitles = useMemo(() => {
+    const m: Record<string, string> = {};
+    SLIDE_KEYS.forEach((k) => { m[k] = config[`${k}_title`] || ''; });
+    return m;
+  }, [config]);
+
+  const currentBannerSubtitles = useMemo(() => {
+    const m: Record<string, string> = {};
+    SLIDE_KEYS.forEach((k) => { m[k] = config[`${k}_subtitle`] || ''; });
+    return m;
+  }, [config]);
+
   if (!isAuthorized) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 pb-20">
@@ -222,7 +234,17 @@ const AdminCustomize = () => {
         onClose={() => setBannersOpen(false)}
         slideKeys={SLIDE_KEYS}
         currentImages={currentBannerImages}
-        onSavedAll={(next) => setConfig((p) => ({ ...p, ...next }))}
+        currentTitles={currentBannerTitles}
+        currentSubtitles={currentBannerSubtitles}
+        onSavedAll={({ images, titles, subtitles }) => {
+          setConfig((p) => {
+            const next = { ...p };
+            Object.entries(images).forEach(([k, v]) => { next[k] = v; });
+            Object.entries(titles).forEach(([k, v]) => { next[`${k}_title`] = v; });
+            Object.entries(subtitles).forEach(([k, v]) => { next[`${k}_subtitle`] = v; });
+            return next;
+          });
+        }}
       />
       <FavoriteIconEditDialog
         open={favOpen}
