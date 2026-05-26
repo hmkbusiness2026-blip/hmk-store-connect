@@ -87,10 +87,10 @@ const Index = () => {
         </div>
       </header>
 
-      <div className="px-5 pt-4 space-y-5 max-w-lg mx-auto">
-      <PromoBanner />
-
-      <SearchBar value={searchQuery} onChange={setSearchQuery} />
+      <div className="px-5 pt-6 pb-2 space-y-6 max-w-lg mx-auto">
+      <div className="py-2">
+        <PromoBanner />
+      </div>
 
       <PWAInstallButton />
 
@@ -98,7 +98,7 @@ const Index = () => {
         <h2 className="font-display font-extrabold text-base text-foreground mb-3">
           {lang === 'ar' ? 'شحن العاب الموبايل' : 'Mobile Game Top-up'}
         </h2>
-        <GameGrid onSelectGame={(id) => navigate(`/game/${id}`)} searchQuery={searchQuery} category="all" />
+        <GameGrid onSelectGame={(id) => navigate(`/game/${id}`)} searchQuery="" category="all" />
       </div>
 
       <ReviewsCarousel />
