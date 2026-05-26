@@ -187,7 +187,7 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
                   />
                   {showOverlay && (
                     <>
-                      <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-background/90 via-background/40 to-transparent pointer-events-none" />
+                      <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
                       <div className="absolute bottom-4 start-4 end-4 flex items-end justify-between gap-3">
                         <div className="min-w-0">
                           {s.title && (
