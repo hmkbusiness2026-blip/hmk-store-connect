@@ -4,13 +4,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Upload, Save, Trash2, ImageIcon } from 'lucide-react';
 
+type Suffix = 'link' | 'btn_text';
+
 interface SlideRow {
   key: string;
   label: string;
   url: string;
-  title: string;
-  subtitle: string;
-  dirty?: boolean;
+  link: string;
+  btnText: string;
 }
 
 interface Props {
@@ -18,14 +19,15 @@ interface Props {
   onClose: () => void;
   slideKeys: string[];
   /** Maps a row key (+ optional suffix) to the actual site_config key. Defaults to identity. */
-  keyForRow?: (rowKey: string, suffix?: 'title' | 'subtitle') => string;
+  keyForRow?: (rowKey: string, suffix?: Suffix) => string;
   currentImages: Record<string, string>;
-  currentTitles?: Record<string, string>;
-  currentSubtitles?: Record<string, string>;
+  currentLinks?: Record<string, string>;
+  currentBtnTexts?: Record<string, string>;
+  defaultBtnText?: string;
   onSavedAll?: (next: {
     images: Record<string, string>;
-    titles: Record<string, string>;
-    subtitles: Record<string, string>;
+    links: Record<string, string>;
+    btnTexts: Record<string, string>;
   }) => void;
 }
 
@@ -35,12 +37,13 @@ const BannersManagerDialog = ({
   slideKeys,
   keyForRow,
   currentImages,
-  currentTitles = {},
-  currentSubtitles = {},
+  currentLinks = {},
+  currentBtnTexts = {},
+  defaultBtnText = 'اشحن الآن',
   onSavedAll,
 }: Props) => {
   const { toast } = useToast();
-  const resolveKey = (rowKey: string, suffix?: 'title' | 'subtitle') =>
+  const resolveKey = (rowKey: string, suffix?: Suffix) =>
     keyForRow ? keyForRow(rowKey, suffix) : suffix ? `${rowKey}_${suffix}` : rowKey;
   const [rows, setRows] = useState<SlideRow[]>([]);
   const [saving, setSaving] = useState(false);
@@ -52,20 +55,17 @@ const BannersManagerDialog = ({
         key: k,
         label: `الشريحة ${i + 1}`,
         url: currentImages[k] || '',
-        title: currentTitles[k] || '',
-        subtitle: currentSubtitles[k] || '',
+        link: currentLinks[k] || '',
+        btnText: currentBtnTexts[k] || '',
       })),
     );
-  }, [open, slideKeys, currentImages, currentTitles, currentSubtitles]);
+  }, [open, slideKeys, currentImages, currentLinks, currentBtnTexts]);
 
   const update = (key: string, patch: Partial<SlideRow>) =>
-    setRows((prev) => prev.map((r) => (r.key === key ? { ...r, ...patch, dirty: true } : r)));
+    setRows((prev) => prev.map((r) => (r.key === key ? { ...r, ...patch } : r)));
 
   const handleUpload = async (key: string, file: File) => {
     try {
-      // Banners that are tens of megabytes appear as a "black slide" because
-      // the browser is still downloading them. Downscale anything > 1MB to a
-      // reasonable 1600px-wide JPEG before upload.
       let toUpload: Blob = file;
       let ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
       if (file.size > 1024 * 1024) {
@@ -84,7 +84,6 @@ const BannersManagerDialog = ({
           );
           toUpload = blob;
           ext = 'jpg';
-          console.log(`[banners] resized ${key}: ${(file.size/1024/1024).toFixed(1)}MB -> ${(blob.size/1024).toFixed(0)}KB`);
         } catch (err) {
           console.warn('[banners] resize failed, uploading original', err);
         }
@@ -96,10 +95,7 @@ const BannersManagerDialog = ({
       if (error) throw error;
       const { data } = supabase.storage.from('site-assets').getPublicUrl(path);
       const finalUrl = `${data.publicUrl}?t=${Date.now()}`;
-      console.log(`[banners] uploaded ${key} ->`, finalUrl);
-      if (!finalUrl || !data.publicUrl) {
-        throw new Error('Failed to resolve public URL');
-      }
+      if (!finalUrl || !data.publicUrl) throw new Error('Failed to resolve public URL');
       update(key, { url: finalUrl });
     } catch (e: any) {
       console.error('[banners] upload error', e);
@@ -110,31 +106,31 @@ const BannersManagerDialog = ({
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Persist ALL rows (not only dirty) so every slide's image/title/subtitle
-      // is guaranteed to land in site_config. This prevents "dummy save" where
-      // only slide 1 was updated.
       const now = new Date().toISOString();
       const payload: { key: string; value: string; updated_at: string }[] = [];
       rows.forEach((r) => {
         payload.push({ key: resolveKey(r.key), value: r.url ?? '', updated_at: now });
-        payload.push({ key: resolveKey(r.key, 'title'), value: r.title ?? '', updated_at: now });
-        payload.push({ key: resolveKey(r.key, 'subtitle'), value: r.subtitle ?? '', updated_at: now });
+        payload.push({ key: resolveKey(r.key, 'link'), value: r.link ?? '', updated_at: now });
+        payload.push({
+          key: resolveKey(r.key, 'btn_text'),
+          value: (r.btnText ?? '').trim() || defaultBtnText,
+          updated_at: now,
+        });
       });
-      console.log('[banners] saving payload:', payload.filter(p => !p.key.endsWith('_title') && !p.key.endsWith('_subtitle')));
       const { error } = await supabase
         .from('site_config')
         .upsert(payload, { onConflict: 'key' });
       if (error) throw error;
 
       const images: Record<string, string> = {};
-      const titles: Record<string, string> = {};
-      const subtitles: Record<string, string> = {};
+      const links: Record<string, string> = {};
+      const btnTexts: Record<string, string> = {};
       rows.forEach((r) => {
         images[r.key] = r.url;
-        titles[r.key] = r.title;
-        subtitles[r.key] = r.subtitle;
+        links[r.key] = r.link;
+        btnTexts[r.key] = r.btnText;
       });
-      onSavedAll?.({ images, titles, subtitles });
+      onSavedAll?.({ images, links, btnTexts });
       toast({ title: 'تم حفظ التعديلات' });
       onClose();
     } catch (e: any) {
@@ -143,7 +139,6 @@ const BannersManagerDialog = ({
       setSaving(false);
     }
   };
-
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -157,10 +152,10 @@ const BannersManagerDialog = ({
             <div key={r.key} className="glass-card rounded-xl p-3 space-y-2 border border-border">
               <div className="flex items-center justify-between">
                 <span className="font-display font-bold text-xs text-foreground">{r.label}</span>
-                {(r.url || r.title || r.subtitle) && (
+                {(r.url || r.link || r.btnText) && (
                   <button
                     type="button"
-                    onClick={() => update(r.key, { url: '', title: '', subtitle: '' })}
+                    onClick={() => update(r.key, { url: '', link: '', btnText: '' })}
                     className="text-destructive hover:opacity-80"
                     aria-label="حذف"
                     title="حذف الشريحة"
@@ -172,17 +167,7 @@ const BannersManagerDialog = ({
 
               <div className="w-full h-24 rounded-lg overflow-hidden bg-muted grid place-items-center relative">
                 {r.url ? (
-                  <>
-                    <img src={r.url} alt="" className="w-full h-full object-cover" />
-                    {(r.title || r.subtitle) && (
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end p-2">
-                        <div className="text-white drop-shadow-md">
-                          {r.title && <div className="text-[11px] font-display font-extrabold leading-tight">{r.title}</div>}
-                          {r.subtitle && <div className="text-[9px] opacity-90 truncate">{r.subtitle}</div>}
-                        </div>
-                      </div>
-                    )}
-                  </>
+                  <img src={r.url} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <ImageIcon className="text-muted-foreground" />
                 )}
@@ -201,22 +186,23 @@ const BannersManagerDialog = ({
                 <input
                   value={r.url}
                   onChange={(e) => update(r.key, { url: e.target.value })}
-                  placeholder="أو الصق رابط"
+                  placeholder="أو الصق رابط الصورة"
                   className="flex-1 px-2 py-2 rounded-md bg-muted border border-border text-xs"
                 />
               </div>
 
               <input
-                value={r.title}
-                onChange={(e) => update(r.key, { title: e.target.value })}
-                placeholder="عنوان رئيسي"
-                className="w-full px-2 py-2 rounded-md bg-muted border border-border text-xs font-display font-bold"
+                value={r.link}
+                onChange={(e) => update(r.key, { link: e.target.value })}
+                placeholder="رابط الزر (مثال: /game/honor-of-kings)"
+                dir="ltr"
+                className="w-full px-2 py-2 rounded-md bg-muted border border-border text-xs"
               />
               <input
-                value={r.subtitle}
-                onChange={(e) => update(r.key, { subtitle: e.target.value })}
-                placeholder="نص فرعي"
-                className="w-full px-2 py-2 rounded-md bg-muted border border-border text-xs"
+                value={r.btnText}
+                onChange={(e) => update(r.key, { btnText: e.target.value })}
+                placeholder={`نص الزر (افتراضي: ${defaultBtnText})`}
+                className="w-full px-2 py-2 rounded-md bg-muted border border-border text-xs font-display font-bold"
               />
             </div>
           ))}
