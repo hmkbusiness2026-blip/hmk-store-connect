@@ -1,11 +1,17 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import useEmblaCarousel from 'embla-carousel-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { EffectCoverflow, Autoplay, Navigation, Pagination } from 'swiper/modules';
 import { Pencil, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { usePermissions } from '@/hooks/usePermissions';
 import BannersManagerDialog from '@/components/owner/BannersManagerDialog';
 import bannerImg from '@/assets/mlbb-naruto-banner.jpg';
+
+import 'swiper/css';
+import 'swiper/css/effect-coverflow';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 
 export type BannerScope = 'home' | 'hok' | 'mlbb';
 
@@ -49,7 +55,6 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
   const [links, setLinks] = useState<Record<string, string>>({});
   const [btnTexts, setBtnTexts] = useState<Record<string, string>>({});
   const [managerOpen, setManagerOpen] = useState(false);
-  const [selected, setSelected] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -95,91 +100,6 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
 
   const hasMultiple = slides.length > 1;
 
-  const [emblaRef, embla] = useEmblaCarousel({
-    loop: slides.length >= 3,
-    align: 'center',
-    containScroll: slides.length >= 3 ? false : 'trimSnaps',
-    watchDrag: hasMultiple,
-  });
-
-  // Coverflow tween — scale & dim adjacent slides based on distance from snap.
-  const tween = useCallback(() => {
-    if (!embla) return;
-    const engine = embla.internalEngine();
-    const scrollProgress = embla.scrollProgress();
-    const slidesInView = embla.slidesInView();
-    const slideNodes = embla.slideNodes();
-    const isLoop = engine.options.loop;
-
-    embla.scrollSnapList().forEach((snap, snapIndex) => {
-      let diffToTarget = snap - scrollProgress;
-      const slidesInSnap = engine.slideRegistry[snapIndex];
-
-      slidesInSnap.forEach((slideIndex) => {
-        if (!slidesInView.includes(slideIndex)) return;
-
-        if (isLoop) {
-          engine.slideLooper.loopPoints.forEach((loopItem) => {
-            const target = loopItem.target();
-            if (slideIndex === loopItem.index && target !== 0) {
-              const sign = Math.sign(target);
-              if (sign === -1) diffToTarget = snap - (1 + scrollProgress);
-              if (sign === 1) diffToTarget = snap + (1 - scrollProgress);
-            }
-          });
-        }
-
-        const dist = Math.abs(diffToTarget);
-        const sign = Math.sign(diffToTarget); // <0 = slide is to the LEFT of center
-        const scale = Math.max(0.78, 1 - dist * 0.32);
-        const opacity = Math.max(0.35, 1 - dist * 1.1);
-        const rotateY = Math.max(-35, Math.min(35, -sign * dist * 35));
-        const translateX = sign * dist * 18; // px, pulls side cards inward
-        const node = slideNodes[slideIndex];
-        if (node) {
-          node.style.transform = `perspective(1200px) translateX(${translateX}px) rotateY(${rotateY}deg) scale(${scale})`;
-          node.style.opacity = String(opacity);
-          node.style.zIndex = dist < 0.05 ? '10' : String(Math.max(1, 5 - Math.round(dist * 5)));
-        }
-
-      });
-    });
-  }, [embla]);
-
-
-  useEffect(() => {
-    if (!embla) return;
-    const onSelect = () => setSelected(embla.selectedScrollSnap());
-    onSelect();
-    tween();
-    embla.on('select', onSelect);
-    embla.on('scroll', tween);
-    embla.on('reInit', tween);
-    embla.on('reInit', onSelect);
-    return () => {
-      embla.off('select', onSelect);
-      embla.off('scroll', tween);
-      embla.off('reInit', tween);
-      embla.off('reInit', onSelect);
-    };
-  }, [embla, tween]);
-
-  // Autoplay (10s)
-  const autoplayRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const startAutoplay = useCallback(() => {
-    if (!embla || !hasMultiple) return;
-    if (autoplayRef.current) clearInterval(autoplayRef.current);
-    autoplayRef.current = setInterval(() => embla.scrollNext(), 10000);
-  }, [embla, hasMultiple]);
-  useEffect(() => {
-    startAutoplay();
-    return () => { if (autoplayRef.current) clearInterval(autoplayRef.current); };
-  }, [startAutoplay]);
-
-  const handlePrev = () => { embla?.scrollPrev(); startAutoplay(); };
-  const handleNext = () => { embla?.scrollNext(); startAutoplay(); };
-  const handleDot = (i: number) => { embla?.scrollTo(i); startAutoplay(); };
-
   const handleCta = (slide: Slide) => {
     const link = slide.link;
     if (!link) {
@@ -205,7 +125,7 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
   if (slides.length === 0 && !isOwner) return null;
 
   return (
-    <div className="relative">
+    <div className="relative w-full">
       {isOwner && (
         <button
           type="button"
@@ -218,81 +138,101 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
       )}
 
       {slides.length > 0 && (
-        <div className="relative">
-          <div ref={emblaRef} className="overflow-hidden py-6" style={{ perspective: '1200px' }}>
-            <div className="flex" style={{ touchAction: 'pan-y', transformStyle: 'preserve-3d' }}>
-              {slides.map((s, i) => (
-                <div
-                  key={i}
-                  className="relative shrink-0 grow-0 basis-[70%] sm:basis-[55%] md:basis-[42%] lg:basis-[32%] px-2 transition-[transform,opacity] duration-300 ease-out will-change-transform"
-                  style={{ transformStyle: 'preserve-3d', backfaceVisibility: 'hidden' }}
-                >
-
-                  <div
-                    className="relative overflow-hidden rounded-2xl glow-gold aspect-[3/4] mx-auto"
-                    style={{ backgroundColor: '#e5e7eb' }}
-                  >
-                    <img
-                      src={s.img}
-                      alt={`slide-${i + 1}`}
-                      loading="eager"
-                      decoding="async"
-                      className="absolute inset-0 w-full h-full object-cover"
-                      style={{ backgroundColor: '#e5e7eb' }}
-                    />
-                    {i === selected && (
-                      <div className="absolute inset-x-0 bottom-4 flex justify-center pointer-events-none">
-                        <button
-                          onClick={() => handleCta(s)}
-                          className="pointer-events-auto px-6 py-2.5 rounded-full bg-primary text-primary-foreground text-xs font-display font-extrabold uppercase tracking-wider shadow-[0_0_22px_hsl(var(--primary)/0.6)] active:scale-95 transition-transform"
-                        >
-                          {s.btnText}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
+        <div className="w-full min-h-[60vh] sm:min-h-[500px] flex items-center justify-center py-10 relative">
           {hasMultiple && (
             <>
               <button
                 type="button"
-                onClick={handlePrev}
                 aria-label="السابق"
-                className="absolute start-1 top-1/2 -translate-y-1/2 z-20 grid place-items-center w-9 h-9 rounded-full bg-black/45 hover:bg-black/65 text-white backdrop-blur-sm border border-white/15 transition active:scale-95"
+                className="promo-prev absolute start-2 top-1/2 -translate-y-1/2 z-20 grid place-items-center w-10 h-10 rounded-full bg-black/45 hover:bg-black/65 text-white backdrop-blur-sm border border-white/15 transition active:scale-95"
               >
-                <ChevronLeft size={18} />
+                <ChevronLeft size={20} />
               </button>
               <button
                 type="button"
-                onClick={handleNext}
                 aria-label="التالي"
-                className="absolute end-1 top-1/2 -translate-y-1/2 z-20 grid place-items-center w-9 h-9 rounded-full bg-black/45 hover:bg-black/65 text-white backdrop-blur-sm border border-white/15 transition active:scale-95"
+                className="promo-next absolute end-2 top-1/2 -translate-y-1/2 z-20 grid place-items-center w-10 h-10 rounded-full bg-black/45 hover:bg-black/65 text-white backdrop-blur-sm border border-white/15 transition active:scale-95"
               >
-                <ChevronRight size={18} />
+                <ChevronRight size={20} />
               </button>
             </>
           )}
+
+          <Swiper
+            modules={[EffectCoverflow, Autoplay, Navigation, Pagination]}
+            effect="coverflow"
+            grabCursor
+            centeredSlides
+            slidesPerView="auto"
+            loop={slides.length >= 3}
+            speed={800}
+            coverflowEffect={{
+              rotate: 0,
+              stretch: -40,
+              depth: 300,
+              modifier: 1.5,
+              slideShadows: true,
+            }}
+            autoplay={hasMultiple ? { delay: 5000, disableOnInteraction: false } : false}
+            navigation={hasMultiple ? { prevEl: '.promo-prev', nextEl: '.promo-next' } : false}
+            pagination={hasMultiple ? { clickable: true, el: '.promo-pagination' } : false}
+            className="!overflow-visible w-full"
+            dir="ltr"
+          >
+            {slides.map((s, i) => (
+              <SwiperSlide
+                key={i}
+                className="!w-[260px] sm:!w-[300px] aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 promo-slide"
+              >
+                <div className="relative w-full h-full bg-muted">
+                  <img
+                    src={s.img}
+                    alt={`slide-${i + 1}`}
+                    loading="eager"
+                    decoding="async"
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                  <button
+                    onClick={() => handleCta(s)}
+                    className="promo-cta absolute bottom-6 left-1/2 -translate-x-1/2 w-[80%] bg-primary text-primary-foreground font-display font-bold py-3 px-6 rounded-full shadow-[0_5px_20px_rgba(255,176,0,0.4)] hover:scale-105 active:scale-95 transition-all z-50 text-center"
+                  >
+                    {s.btnText}
+                  </button>
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
         </div>
       )}
 
       {hasMultiple && (
-        <div className="flex justify-center gap-1.5 mt-2">
-          {slides.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => handleDot(i)}
-              aria-label={`Slide ${i + 1}`}
-              className={`h-1.5 rounded-full transition-all ${
-                selected === i ? 'w-6 bg-primary' : 'w-1.5 bg-muted-foreground/40'
-              }`}
-            />
-          ))}
-        </div>
+        <div className="promo-pagination flex justify-center gap-1.5 mt-2" />
       )}
+
+      {/* Coverflow CTA visibility: only active slide */}
+      <style>{`
+        .promo-slide .promo-cta {
+          opacity: 0;
+          pointer-events: none;
+          transform: translate(-50%, 8px);
+          transition: opacity .3s ease, transform .3s ease;
+        }
+        .swiper-slide-active .promo-cta {
+          opacity: 1;
+          pointer-events: auto;
+          transform: translate(-50%, 0);
+        }
+        .promo-pagination .swiper-pagination-bullet {
+          background: hsl(var(--muted-foreground) / 0.4);
+          opacity: 1;
+          width: 6px; height: 6px;
+        }
+        .promo-pagination .swiper-pagination-bullet-active {
+          background: hsl(var(--primary));
+          width: 22px;
+          border-radius: 9999px;
+        }
+      `}</style>
 
       {isOwner && (
         <BannersManagerDialog
