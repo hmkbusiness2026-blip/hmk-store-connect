@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import PromoBanner from '@/components/PromoBanner';
 import GameGrid from '@/components/GameGrid';
 import CheckoutFlow from '@/components/CheckoutFlow';
-import SearchBar from '@/components/SearchBar';
+
 import ReviewsCarousel from '@/components/ReviewsCarousel';
 import SocialLinks from '@/components/SocialLinks';
 import AppFooter from '@/components/AppFooter';
