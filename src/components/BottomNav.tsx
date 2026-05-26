@@ -72,22 +72,32 @@ const BottomNav = () => {
             className="absolute left-1/2 z-50 flex flex-col items-center pointer-events-none"
             style={{ transform: 'translateX(-50%)', top: '-30px' }}
           >
-            <button
-              onClick={handleFavorite}
-              aria-label={lang === 'ar' ? 'اللعبة المفضلة' : 'Favorite Game'}
-              className="pointer-events-auto w-[60px] h-[60px] rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-[0_8px_28px_hsl(var(--primary)/0.55)] active:scale-95 transition-transform overflow-hidden"
-              style={{ border: '4px solid hsl(var(--background))' }}
-            >
-              {favoriteGameData ? (
-                <img
-                  src={favoriteGameData.image}
-                  alt={favoriteGameData.name}
-                  style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }}
+            <div className="pointer-events-auto relative">
+              <button
+                onClick={handleFavorite}
+                aria-label={lang === 'ar' ? 'اللعبة المفضلة' : 'Favorite Game'}
+                className="w-[60px] h-[60px] rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-[0_8px_28px_hsl(var(--primary)/0.55)] active:scale-95 transition-transform overflow-hidden"
+                style={{ border: '4px solid hsl(var(--background))' }}
+              >
+                {favIconUrl ? (
+                  <img
+                    src={favIconUrl}
+                    alt={favoriteGameData?.name || 'Favorite'}
+                    style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <Star size={22} strokeWidth={2.5} className="fill-current" />
+                )}
+              </button>
+              {isOwner && favoriteGame && (
+                <OwnerEditButton
+                  onClick={() => setIconEditOpen(true)}
+                  className="-top-1 -end-1"
+                  label="تعديل أيقونة لعبتي"
                 />
-              ) : (
-                <Star size={22} strokeWidth={2.5} className="fill-current" />
               )}
-            </button>
+            </div>
+
           </div>
 
           <div className="glass border-t border-border h-16 flex items-stretch">
