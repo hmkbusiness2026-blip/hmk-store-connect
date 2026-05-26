@@ -271,14 +271,14 @@ const AdminCustomize = () => {
         onClose={() => setBannersOpen(false)}
         slideKeys={SLIDE_KEYS}
         currentImages={currentBannerImages}
-        currentTitles={currentBannerTitles}
-        currentSubtitles={currentBannerSubtitles}
-        onSavedAll={({ images, titles, subtitles }) => {
+        currentLinks={currentBannerLinks}
+        currentBtnTexts={currentBannerBtnTexts}
+        onSavedAll={({ images, links, btnTexts }) => {
           setConfig((p) => {
             const next = { ...p };
-            Object.entries(images).forEach(([k, v]) => { next[k] = v; });
-            Object.entries(titles).forEach(([k, v]) => { next[`${k}_title`] = v; });
-            Object.entries(subtitles).forEach(([k, v]) => { next[`${k}_subtitle`] = v; });
+            Object.entries(images).forEach(([k, v]) => { next[k] = v as string; });
+            Object.entries(links).forEach(([k, v]) => { next[`${k}_link`] = v as string; });
+            Object.entries(btnTexts).forEach(([k, v]) => { next[`${k}_btn_text`] = v as string; });
             return next;
           });
         }}
