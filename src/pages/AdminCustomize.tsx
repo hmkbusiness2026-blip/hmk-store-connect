@@ -71,15 +71,15 @@ const AdminCustomize = () => {
     return m;
   }, [config]);
 
-  const currentBannerTitles = useMemo(() => {
+  const currentBannerLinks = useMemo(() => {
     const m: Record<string, string> = {};
-    SLIDE_KEYS.forEach((k) => { m[k] = config[`${k}_title`] || ''; });
+    SLIDE_KEYS.forEach((k) => { m[k] = config[`${k}_link`] || ''; });
     return m;
   }, [config]);
 
-  const currentBannerSubtitles = useMemo(() => {
+  const currentBannerBtnTexts = useMemo(() => {
     const m: Record<string, string> = {};
-    SLIDE_KEYS.forEach((k) => { m[k] = config[`${k}_subtitle`] || ''; });
+    SLIDE_KEYS.forEach((k) => { m[k] = config[`${k}_btn_text`] || ''; });
     return m;
   }, [config]);
 
