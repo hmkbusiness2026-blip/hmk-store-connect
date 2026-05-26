@@ -24,6 +24,8 @@ const PromoBanner = () => {
   ]);
   const [api, setApi] = useState<CarouselApi | null>(null);
   const [current, setCurrent] = useState(0);
+  const [editIdx, setEditIdx] = useState<number | null>(null);
+  const slideKeys = ['banner_main', 'banner_2', 'banner_3'];
 
   useEffect(() => {
     (async () => {
