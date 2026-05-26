@@ -1,15 +1,9 @@
-import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Globe, MessageCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Globe, MessageCircle } from 'lucide-react';
 import { games, getServersForGame } from '@/lib/gameData';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Carousel, CarouselContent, CarouselItem, CarouselApi } from '@/components/ui/carousel';
 import { WA_NUMBER } from '@/lib/validation';
-import bannerImg from '@/assets/mlbb-naruto-banner.jpg';
-import hokImg from '@/assets/game-hok.jpg';
-import mlbbImg from '@/assets/game-mlbb.jpg';
-
-const slidesPool = [bannerImg, hokImg, mlbbImg, bannerImg];
+import PromoBanner, { type BannerScope } from '@/components/PromoBanner';
 
 const GamePage = () => {
   const { gameId } = useParams();
