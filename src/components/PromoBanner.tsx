@@ -20,11 +20,13 @@ export type BannerScope = 'home' | 'hok' | 'mlbb';
 // Local slide ids (1..4). Storage keys are derived per scope so each page is independent.
 const SLIDE_IDS = ['1', '2', '3', '4'];
 
-const HOME_DEFAULTS: Record<string, { img: string; title?: string }> = {
-  '1': { img: bannerImg, title: 'MLBB x Naruto' },
-  '2': { img: hokImg, title: 'Honor of Kings' },
-  '3': { img: mlbbImg, title: 'Mobile Legends' },
+// First-time fallback (only used when the owner has saved NOTHING for this scope).
+const FIRST_TIME_FALLBACK: Record<BannerScope, { img: string; title?: string } | null> = {
+  home: { img: bannerImg, title: 'MLBB x Naruto' },
+  hok: null,
+  mlbb: null,
 };
+
 
 const buildKey = (scope: BannerScope, id: string, suffix?: 'title' | 'subtitle') => {
   // Home keeps the legacy key shape used elsewhere; games use a scoped prefix.
@@ -77,22 +79,27 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
     })();
   }, [scope]);
 
-  // HARD FILTER: only slides with a non-empty image URL.
+  // HARD FILTER: only render slides whose DB image URL is a non-empty trimmed string.
+  // No per-slot defaults — empty slots simply don't render.
   const slides: Slide[] = useMemo(() => {
     const list: Slide[] = [];
     SLIDE_IDS.forEach((id) => {
-      const fromDb = images[id];
-      const fallback = scope === 'home' ? HOME_DEFAULTS[id]?.img : undefined;
-      const img = (fromDb && fromDb.trim()) || (fallback && fallback.trim()) || '';
+      const img = (images[id] || '').trim();
       if (!img) return;
       list.push({
         img,
-        title: titles[id] ?? (scope === 'home' ? HOME_DEFAULTS[id]?.title ?? '' : ''),
-        subtitle: subtitles[id] ?? '',
+        title: (titles[id] || '').trim(),
+        subtitle: (subtitles[id] || '').trim(),
       });
     });
+    // First-time fallback: only when the owner has saved nothing for this scope.
+    if (list.length === 0) {
+      const fb = FIRST_TIME_FALLBACK[scope];
+      if (fb) list.push({ img: fb.img, title: fb.title || '', subtitle: '' });
+    }
     return list;
   }, [images, titles, subtitles, scope]);
+
 
   const hasMultiple = slides.length > 1;
   const autoplayRef = useRef<ReturnType<typeof setInterval> | null>(null);
