@@ -209,22 +209,58 @@ const AdminCustomize = () => {
               </section>
             </>
           ) : (
-            <section className="glass-card p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <h2 className="font-display font-bold text-sm text-foreground">
-                  منتجات {tab === 'hok' ? 'هونر أوف كينجز' : 'موبايل ليجندز'}
-                </h2>
-                <button
-                  onClick={() => setProductsOpen(tab)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/90 text-primary-foreground text-[11px] font-display font-bold shadow-[0_0_14px_hsl(var(--primary)/0.45)] hover:brightness-110 active:scale-95 transition"
-                >
-                  <Pencil size={12} /> تعديل المنتجات
-                </button>
-              </div>
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
-                إدارة الباقات: تعديل صورة المنتج، الاسم/الكمية، والسعر. تنعكس التعديلات على واجهة المتجر فوراً مع الحفاظ على محاذاة السعر إلى اليسار.
-              </p>
-            </section>
+            <>
+              <section className="glass-card p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-display font-bold text-sm text-foreground">
+                    بانرات {tab === 'hok' ? 'هونر أوف كينجز' : 'موبايل ليجندز'}
+                  </h2>
+                  <button
+                    onClick={() => setGameBannersOpen(tab)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/90 text-primary-foreground text-[11px] font-display font-bold shadow-[0_0_14px_hsl(var(--primary)/0.45)] hover:brightness-110 active:scale-95 transition"
+                  >
+                    <Pencil size={12} /> تعديل البانرات
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {['1', '2', '3', '4'].map((id) => {
+                    const k = `${tab}_banner_${id}`;
+                    return (
+                      <div key={id} className="aspect-video rounded-lg overflow-hidden bg-muted grid place-items-center border border-border">
+                        {config[k] ? (
+                          <img src={config[k]} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="flex flex-col items-center gap-1 text-muted-foreground">
+                            <ImageIcon size={18} />
+                            <span className="text-[10px]">شريحة {id}</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  بانرات خاصة بهذه اللعبة فقط، ولا تظهر في الصفحة الرئيسية.
+                </p>
+              </section>
+
+              <section className="glass-card p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-display font-bold text-sm text-foreground">
+                    منتجات {tab === 'hok' ? 'هونر أوف كينجز' : 'موبايل ليجندز'}
+                  </h2>
+                  <button
+                    onClick={() => setProductsOpen(tab)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/90 text-primary-foreground text-[11px] font-display font-bold shadow-[0_0_14px_hsl(var(--primary)/0.45)] hover:brightness-110 active:scale-95 transition"
+                  >
+                    <Pencil size={12} /> تعديل المنتجات
+                  </button>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  إدارة الباقات: تعديل صورة المنتج، الاسم/الكمية، والسعر. تنعكس التعديلات على واجهة المتجر فوراً مع الحفاظ على محاذاة السعر إلى اليسار.
+                </p>
+              </section>
+            </>
           )}
         </main>
       </div>
