@@ -77,18 +77,21 @@ const BannersManagerDialog = ({
   const handleSave = async () => {
     setSaving(true);
     try {
-      const dirty = rows.filter((r) => r.dirty);
-      if (dirty.length) {
-        const payload: { key: string; value: string; updated_at: string }[] = [];
-        const now = new Date().toISOString();
-        dirty.forEach((r) => {
-          payload.push({ key: resolveKey(r.key), value: r.url, updated_at: now });
-          payload.push({ key: resolveKey(r.key, 'title'), value: r.title, updated_at: now });
-          payload.push({ key: resolveKey(r.key, 'subtitle'), value: r.subtitle, updated_at: now });
-        });
-        const { error } = await supabase.from('site_config').upsert(payload);
-        if (error) throw error;
-      }
+      // Persist ALL rows (not only dirty) so every slide's image/title/subtitle
+      // is guaranteed to land in site_config. This prevents "dummy save" where
+      // only slide 1 was updated.
+      const now = new Date().toISOString();
+      const payload: { key: string; value: string; updated_at: string }[] = [];
+      rows.forEach((r) => {
+        payload.push({ key: resolveKey(r.key), value: r.url ?? '', updated_at: now });
+        payload.push({ key: resolveKey(r.key, 'title'), value: r.title ?? '', updated_at: now });
+        payload.push({ key: resolveKey(r.key, 'subtitle'), value: r.subtitle ?? '', updated_at: now });
+      });
+      const { error } = await supabase
+        .from('site_config')
+        .upsert(payload, { onConflict: 'key' });
+      if (error) throw error;
+
       const images: Record<string, string> = {};
       const titles: Record<string, string> = {};
       const subtitles: Record<string, string> = {};
@@ -106,6 +109,7 @@ const BannersManagerDialog = ({
       setSaving(false);
     }
   };
+
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
