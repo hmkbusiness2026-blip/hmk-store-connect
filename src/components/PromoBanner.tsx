@@ -1,35 +1,31 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import useEmblaCarousel from 'embla-carousel-react';
 import { Pencil, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Carousel, CarouselContent, CarouselItem, CarouselApi } from '@/components/ui/carousel';
 import { usePermissions } from '@/hooks/usePermissions';
 import BannersManagerDialog from '@/components/owner/BannersManagerDialog';
 import bannerImg from '@/assets/mlbb-naruto-banner.jpg';
-import hokImg from '@/assets/game-hok.jpg';
-import mlbbImg from '@/assets/game-mlbb.jpg';
-
-interface Slide {
-  img: string;
-  title: string;
-  subtitle: string;
-}
 
 export type BannerScope = 'home' | 'hok' | 'mlbb';
 
-// Local slide ids (1..4). Storage keys are derived per scope so each page is independent.
+interface Slide {
+  img: string;
+  link: string;
+  btnText: string;
+}
+
 const SLIDE_IDS = ['1', '2', '3', '4'];
 
-// First-time fallback (only used when the owner has saved NOTHING for this scope).
-const FIRST_TIME_FALLBACK: Record<BannerScope, { img: string; title?: string } | null> = {
-  home: { img: bannerImg, title: 'MLBB x Naruto' },
+const FIRST_TIME_FALLBACK: Record<BannerScope, { img: string } | null> = {
+  home: { img: bannerImg },
   hok: null,
   mlbb: null,
 };
 
+type Suffix = 'link' | 'btn_text';
 
-const buildKey = (scope: BannerScope, id: string, suffix?: 'title' | 'subtitle') => {
-  // Home keeps the legacy key shape used elsewhere; games use a scoped prefix.
+const buildKey = (scope: BannerScope, id: string, suffix?: Suffix) => {
   const base =
     scope === 'home'
       ? id === '1'
@@ -43,102 +39,163 @@ interface PromoBannerProps {
   scope?: BannerScope;
 }
 
-const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
-  const { t } = useLanguage();
-  const { isOwner } = usePermissions();
-  const [images, setImages] = useState<Record<string, string>>({});
-  const [titles, setTitles] = useState<Record<string, string>>({});
-  const [subtitles, setSubtitles] = useState<Record<string, string>>({});
-  const [api, setApi] = useState<CarouselApi | null>(null);
-  const [current, setCurrent] = useState(0);
-  const [managerOpen, setManagerOpen] = useState(false);
+const DEFAULT_BTN_TEXT = 'اشحن الآن';
 
-  const storageKeys = useMemo(() => SLIDE_IDS.map((id) => buildKey(scope, id)), [scope]);
+const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
+  const { isOwner } = usePermissions();
+  const navigate = useNavigate();
+
+  const [images, setImages] = useState<Record<string, string>>({});
+  const [links, setLinks] = useState<Record<string, string>>({});
+  const [btnTexts, setBtnTexts] = useState<Record<string, string>>({});
+  const [managerOpen, setManagerOpen] = useState(false);
+  const [selected, setSelected] = useState(0);
 
   useEffect(() => {
     (async () => {
       const keys: string[] = [];
       SLIDE_IDS.forEach((id) => {
-        keys.push(buildKey(scope, id), buildKey(scope, id, 'title'), buildKey(scope, id, 'subtitle'));
+        keys.push(buildKey(scope, id), buildKey(scope, id, 'link'), buildKey(scope, id, 'btn_text'));
       });
       const { data } = await supabase.from('site_config').select('key, value').in('key', keys);
       const imgs: Record<string, string> = {};
-      const ttls: Record<string, string> = {};
-      const subs: Record<string, string> = {};
+      const lnks: Record<string, string> = {};
+      const btns: Record<string, string> = {};
       (data || []).forEach((row: any) => {
-        if (!row.value) return;
+        if (row.value == null) return;
         SLIDE_IDS.forEach((id) => {
           if (row.key === buildKey(scope, id)) imgs[id] = row.value;
-          else if (row.key === buildKey(scope, id, 'title')) ttls[id] = row.value;
-          else if (row.key === buildKey(scope, id, 'subtitle')) subs[id] = row.value;
+          else if (row.key === buildKey(scope, id, 'link')) lnks[id] = row.value;
+          else if (row.key === buildKey(scope, id, 'btn_text')) btns[id] = row.value;
         });
       });
       setImages(imgs);
-      setTitles(ttls);
-      setSubtitles(subs);
+      setLinks(lnks);
+      setBtnTexts(btns);
     })();
   }, [scope]);
 
-  // HARD FILTER: only render slides whose DB image URL is a non-empty trimmed string.
   const slides: Slide[] = useMemo(() => {
     const list: Slide[] = [];
     SLIDE_IDS.forEach((id) => {
       const img = (images[id] || '').trim();
-      if (!img) {
-        console.log(`[PromoBanner:${scope}] slot ${id} SKIPPED (empty url)`);
-        return;
-      }
+      if (!img) return;
       list.push({
         img,
-        title: (titles[id] || '').trim(),
-        subtitle: (subtitles[id] || '').trim(),
+        link: (links[id] || '').trim(),
+        btnText: (btnTexts[id] || '').trim() || DEFAULT_BTN_TEXT,
       });
     });
     if (list.length === 0) {
       const fb = FIRST_TIME_FALLBACK[scope];
-      if (fb) list.push({ img: fb.img, title: fb.title || '', subtitle: '' });
+      if (fb) list.push({ img: fb.img, link: '', btnText: DEFAULT_BTN_TEXT });
     }
-    console.log(`[PromoBanner:${scope}] rendering ${list.length} slide(s):`, list.map(s => s.img));
     return list;
-  }, [images, titles, subtitles, scope]);
-
+  }, [images, links, btnTexts, scope]);
 
   const hasMultiple = slides.length > 1;
-  const autoplayRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const startAutoplay = useCallback(() => {
-    if (!api || !hasMultiple) return;
-    if (autoplayRef.current) clearInterval(autoplayRef.current);
-    autoplayRef.current = setInterval(() => api.scrollNext(), 15000);
-  }, [api, hasMultiple]);
+  const [emblaRef, embla] = useEmblaCarousel({
+    loop: slides.length >= 3,
+    align: 'center',
+    containScroll: slides.length >= 3 ? false : 'trimSnaps',
+    watchDrag: hasMultiple,
+  });
+
+  // Coverflow tween — scale & dim adjacent slides based on distance from snap.
+  const tween = useCallback(() => {
+    if (!embla) return;
+    const engine = embla.internalEngine();
+    const scrollProgress = embla.scrollProgress();
+    const slidesInView = embla.slidesInView();
+    const slideNodes = embla.slideNodes();
+    const isLoop = engine.options.loop;
+
+    embla.scrollSnapList().forEach((snap, snapIndex) => {
+      let diffToTarget = snap - scrollProgress;
+      const slidesInSnap = engine.slideRegistry[snapIndex];
+
+      slidesInSnap.forEach((slideIndex) => {
+        if (!slidesInView.includes(slideIndex)) return;
+
+        if (isLoop) {
+          engine.slideLooper.loopPoints.forEach((loopItem) => {
+            const target = loopItem.target();
+            if (slideIndex === loopItem.index && target !== 0) {
+              const sign = Math.sign(target);
+              if (sign === -1) diffToTarget = snap - (1 + scrollProgress);
+              if (sign === 1) diffToTarget = snap + (1 - scrollProgress);
+            }
+          });
+        }
+
+        const dist = Math.abs(diffToTarget);
+        const scale = Math.max(0.8, 1 - dist * 0.4);
+        const opacity = Math.max(0.45, 1 - dist * 1.2);
+        const node = slideNodes[slideIndex];
+        if (node) {
+          node.style.transform = `scale(${scale})`;
+          node.style.opacity = String(opacity);
+          node.style.zIndex = dist < 0.05 ? '10' : '1';
+        }
+      });
+    });
+  }, [embla]);
+
 
   useEffect(() => {
-    if (!api) return;
-    const onSelect = () => setCurrent(api.selectedScrollSnap());
-    api.on('select', onSelect);
-    startAutoplay();
+    if (!embla) return;
+    const onSelect = () => setSelected(embla.selectedScrollSnap());
+    onSelect();
+    tween();
+    embla.on('select', onSelect);
+    embla.on('scroll', tween);
+    embla.on('reInit', tween);
+    embla.on('reInit', onSelect);
     return () => {
-      if (autoplayRef.current) clearInterval(autoplayRef.current);
-      api.off('select', onSelect);
+      embla.off('select', onSelect);
+      embla.off('scroll', tween);
+      embla.off('reInit', tween);
+      embla.off('reInit', onSelect);
     };
-  }, [api, startAutoplay]);
+  }, [embla, tween]);
 
-  const handlePrev = () => { api?.scrollPrev(); startAutoplay(); };
-  const handleNext = () => { api?.scrollNext(); startAutoplay(); };
-  const handleDot = (i: number) => { api?.scrollTo(i); startAutoplay(); };
+  // Autoplay (10s)
+  const autoplayRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const startAutoplay = useCallback(() => {
+    if (!embla || !hasMultiple) return;
+    if (autoplayRef.current) clearInterval(autoplayRef.current);
+    autoplayRef.current = setInterval(() => embla.scrollNext(), 10000);
+  }, [embla, hasMultiple]);
+  useEffect(() => {
+    startAutoplay();
+    return () => { if (autoplayRef.current) clearInterval(autoplayRef.current); };
+  }, [startAutoplay]);
 
-  const scrollToGames = () => {
-    document.getElementById('games-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const handlePrev = () => { embla?.scrollPrev(); startAutoplay(); };
+  const handleNext = () => { embla?.scrollNext(); startAutoplay(); };
+  const handleDot = (i: number) => { embla?.scrollTo(i); startAutoplay(); };
+
+  const handleCta = (slide: Slide) => {
+    const link = slide.link;
+    if (!link) {
+      document.getElementById('games-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    if (/^https?:\/\//i.test(link)) {
+      window.open(link, '_blank', 'noopener,noreferrer');
+    } else {
+      navigate(link.startsWith('/') ? link : `/${link}`);
+    }
   };
 
-  // Maps passed to dialog use slide id as the row key; dialog persists via keyForRow.
   const currentImages: Record<string, string> = {};
-  const currentTitles: Record<string, string> = {};
-  const currentSubtitles: Record<string, string> = {};
+  const currentLinks: Record<string, string> = {};
+  const currentBtnTexts: Record<string, string> = {};
   SLIDE_IDS.forEach((id) => {
     currentImages[id] = images[id] || '';
-    currentTitles[id] = titles[id] || '';
-    currentSubtitles[id] = subtitles[id] || '';
+    currentLinks[id] = links[id] || '';
+    currentBtnTexts[id] = btnTexts[id] || '';
   });
 
   if (slides.length === 0 && !isOwner) return null;
@@ -157,78 +214,51 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
       )}
 
       {slides.length > 0 && (
-        <Carousel
-          setApi={setApi}
-          opts={{ loop: slides.length >= 3, watchDrag: hasMultiple }}
-          className="overflow-hidden rounded-2xl"
-        >
-          <CarouselContent>
-            {slides.map((s, i) => {
-              const hasText = !!(s.title || s.subtitle);
-              const showCta = scope === 'home';
-              const showOverlay = hasText || showCta;
-              return (
-              <CarouselItem key={i}>
-                <div className="relative overflow-hidden rounded-2xl glow-gold" style={{ backgroundColor: '#e5e7eb' }}>
-                  <img
-                    src={s.img}
-                    alt={s.title || `slide-${i + 1}`}
-                    width={1280}
-                    height={512}
-                    loading="eager"
-                    decoding="async"
-                    className="block w-full h-44 sm:h-56 object-cover"
+        <div className="relative">
+          <div ref={emblaRef} className="overflow-hidden py-4">
+            <div className="flex" style={{ touchAction: 'pan-y' }}>
+              {slides.map((s, i) => (
+                <div
+                  key={i}
+                  className="relative shrink-0 grow-0 basis-[80%] sm:basis-[70%] px-2 transition-[transform,opacity] duration-300 ease-out will-change-transform"
+                >
+                  <div
+                    className="relative overflow-hidden rounded-2xl glow-gold"
                     style={{ backgroundColor: '#e5e7eb' }}
-                    onLoad={() => console.log(`[PromoBanner:${scope}] slide ${i + 1} LOADED`, s.img)}
-                    onError={(e) => {
-                      console.warn(`[PromoBanner:${scope}] slide ${i + 1} FAILED`, s.img);
-                    }}
-                  />
-                  {isOwner && (
-                    <div className="absolute top-2 start-2 z-30 max-w-[70%] px-2 py-1 rounded bg-red-600 text-white text-[10px] font-mono break-all leading-tight">
-                      DEBUG #{i + 1}: {s.img || 'NULL'}
-                    </div>
-                  )}
-
-                  {showOverlay && (
-                    <>
-                      <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
-                      <div className="absolute bottom-4 start-4 end-4 flex items-end justify-between gap-3">
-                        <div className="min-w-0">
-                          {s.title && (
-                            <h2 className="text-xl font-display font-extrabold text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)] truncate">
-                              {s.title}
-                            </h2>
-                          )}
-                          {s.subtitle && (
-                            <p className="text-xs text-white/90 drop-shadow-[0_1px_4px_rgba(0,0,0,0.7)] truncate">
-                              {s.subtitle}
-                            </p>
-                          )}
-                        </div>
-                        {showCta && (
-                          <button
-                            onClick={scrollToGames}
-                            className="shrink-0 px-4 py-2 rounded-full bg-primary text-primary-foreground text-xs font-display font-extrabold uppercase tracking-wider shadow-[0_0_20px_hsl(var(--primary)/0.45)] active:scale-95 transition-transform"
-                          >
-                            TOP UP
-                          </button>
-                        )}
+                  >
+                    <img
+                      src={s.img}
+                      alt={`slide-${i + 1}`}
+                      width={1280}
+                      height={512}
+                      loading="eager"
+                      decoding="async"
+                      className="block w-full h-44 sm:h-56 object-cover"
+                      style={{ backgroundColor: '#e5e7eb' }}
+                    />
+                    {i === selected && (
+                      <div className="absolute inset-x-0 bottom-3 flex justify-center pointer-events-none">
+                        <button
+                          onClick={() => handleCta(s)}
+                          className="pointer-events-auto px-5 py-2 rounded-full bg-primary text-primary-foreground text-xs font-display font-extrabold uppercase tracking-wider shadow-[0_0_20px_hsl(var(--primary)/0.55)] active:scale-95 transition-transform"
+                        >
+                          {s.btnText}
+                        </button>
                       </div>
-                    </>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </CarouselItem>
-              );
-            })}
-          </CarouselContent>
+              ))}
+            </div>
+          </div>
+
           {hasMultiple && (
             <>
               <button
                 type="button"
                 onClick={handlePrev}
                 aria-label="السابق"
-                className="absolute start-2 top-1/2 -translate-y-1/2 z-20 grid place-items-center w-9 h-9 rounded-full bg-black/45 hover:bg-black/65 text-white backdrop-blur-sm border border-white/15 transition active:scale-95"
+                className="absolute start-1 top-1/2 -translate-y-1/2 z-20 grid place-items-center w-9 h-9 rounded-full bg-black/45 hover:bg-black/65 text-white backdrop-blur-sm border border-white/15 transition active:scale-95"
               >
                 <ChevronLeft size={18} />
               </button>
@@ -236,13 +266,13 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
                 type="button"
                 onClick={handleNext}
                 aria-label="التالي"
-                className="absolute end-2 top-1/2 -translate-y-1/2 z-20 grid place-items-center w-9 h-9 rounded-full bg-black/45 hover:bg-black/65 text-white backdrop-blur-sm border border-white/15 transition active:scale-95"
+                className="absolute end-1 top-1/2 -translate-y-1/2 z-20 grid place-items-center w-9 h-9 rounded-full bg-black/45 hover:bg-black/65 text-white backdrop-blur-sm border border-white/15 transition active:scale-95"
               >
                 <ChevronRight size={18} />
               </button>
             </>
           )}
-        </Carousel>
+        </div>
       )}
 
       {hasMultiple && (
@@ -253,7 +283,7 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
               onClick={() => handleDot(i)}
               aria-label={`Slide ${i + 1}`}
               className={`h-1.5 rounded-full transition-all ${
-                current === i ? 'w-6 bg-primary' : 'w-1.5 bg-muted-foreground/40'
+                selected === i ? 'w-6 bg-primary' : 'w-1.5 bg-muted-foreground/40'
               }`}
             />
           ))}
@@ -265,14 +295,15 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
           open={managerOpen}
           onClose={() => setManagerOpen(false)}
           slideKeys={SLIDE_IDS}
-          keyForRow={(id, suffix) => buildKey(scope, id, suffix)}
+          keyForRow={(id, suffix) => buildKey(scope, id, suffix as Suffix | undefined)}
           currentImages={currentImages}
-          currentTitles={currentTitles}
-          currentSubtitles={currentSubtitles}
-          onSavedAll={({ images: nImg, titles: nTtl, subtitles: nSub }) => {
+          currentLinks={currentLinks}
+          currentBtnTexts={currentBtnTexts}
+          defaultBtnText={DEFAULT_BTN_TEXT}
+          onSavedAll={({ images: nImg, links: nLnk, btnTexts: nBtn }) => {
             setImages(nImg);
-            setTitles(nTtl);
-            setSubtitles(nSub);
+            setLinks(nLnk);
+            setBtnTexts(nBtn);
           }}
         />
       )}
