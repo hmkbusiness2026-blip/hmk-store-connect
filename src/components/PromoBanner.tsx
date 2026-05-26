@@ -67,6 +67,7 @@ const PromoBanner = () => {
           {slides.map((s, i) => (
             <CarouselItem key={i}>
               <div className="relative overflow-hidden rounded-2xl glow-gold">
+                <OwnerEditButton onClick={() => setEditIdx(i)} label="تعديل البانر" />
                 <img
                   src={s.img}
                   alt={s.title}
