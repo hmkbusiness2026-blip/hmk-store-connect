@@ -37,6 +37,7 @@ import OwnerLeaderPage from "./pages/owner/OwnerLeaderPage";
 import OwnerOrdersPage from "./pages/owner/OwnerOrdersPage";
 import OwnerReportsPage from "./pages/owner/OwnerReportsPage";
 import OwnerProfilePage from "./pages/owner/OwnerProfilePage";
+import OwnerLogsPage from "./pages/owner/OwnerLogsPage";
 import AdminCustomize from "./pages/AdminCustomize";
 import NotFound from "./pages/NotFound";
 import StaffLayout from "./pages/staff/StaffLayout";
