@@ -24,6 +24,7 @@ const AdminCustomize = () => {
   const [config, setConfig] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [bannersOpen, setBannersOpen] = useState(false);
+  const [gameBannersOpen, setGameBannersOpen] = useState<null | 'hok' | 'mlbb'>(null);
   const [favOpen, setFavOpen] = useState(false);
   const [productsOpen, setProductsOpen] = useState<null | string>(null);
 
