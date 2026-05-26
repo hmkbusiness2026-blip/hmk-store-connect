@@ -108,6 +108,7 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
     const engine = embla.internalEngine();
     const scrollProgress = embla.scrollProgress();
     const slidesInView = embla.slidesInView();
+    const slideNodes = embla.slideNodes();
     const isLoop = engine.options.loop;
 
     embla.scrollSnapList().forEach((snap, snapIndex) => {
@@ -131,7 +132,7 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
         const dist = Math.abs(diffToTarget);
         const scale = Math.max(0.8, 1 - dist * 0.4);
         const opacity = Math.max(0.45, 1 - dist * 1.2);
-        const node = engine.slides[slideIndex] as HTMLElement;
+        const node = slideNodes[slideIndex];
         if (node) {
           node.style.transform = `scale(${scale})`;
           node.style.opacity = String(opacity);
@@ -140,6 +141,7 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
       });
     });
   }, [embla]);
+
 
   useEffect(() => {
     if (!embla) return;
