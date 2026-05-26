@@ -219,13 +219,15 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
 
       {slides.length > 0 && (
         <div className="relative">
-          <div ref={emblaRef} className="overflow-hidden py-4">
-            <div className="flex" style={{ touchAction: 'pan-y' }}>
+          <div ref={emblaRef} className="overflow-hidden py-6" style={{ perspective: '1200px' }}>
+            <div className="flex" style={{ touchAction: 'pan-y', transformStyle: 'preserve-3d' }}>
               {slides.map((s, i) => (
                 <div
                   key={i}
                   className="relative shrink-0 grow-0 basis-[70%] sm:basis-[55%] md:basis-[42%] lg:basis-[32%] px-2 transition-[transform,opacity] duration-300 ease-out will-change-transform"
+                  style={{ transformStyle: 'preserve-3d', backfaceVisibility: 'hidden' }}
                 >
+
                   <div
                     className="relative overflow-hidden rounded-2xl glow-gold aspect-[3/4] mx-auto"
                     style={{ backgroundColor: '#e5e7eb' }}
