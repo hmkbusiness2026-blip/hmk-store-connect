@@ -216,7 +216,7 @@ const AdminCustomize = () => {
                     بانرات {tab === 'hok' ? 'هونر أوف كينجز' : 'موبايل ليجندز'}
                   </h2>
                   <button
-                    onClick={() => setGameBannersOpen(tab)}
+                    onClick={() => setGameBannersOpen(tab as 'hok' | 'mlbb')}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/90 text-primary-foreground text-[11px] font-display font-bold shadow-[0_0_14px_hsl(var(--primary)/0.45)] hover:brightness-110 active:scale-95 transition"
                   >
                     <Pencil size={12} /> تعديل البانرات
