@@ -491,26 +491,32 @@ export type Database = {
       product_images: {
         Row: {
           created_at: string
+          display_name: string | null
           game_id: string
           id: string
           image_url: string
           package_id: string | null
+          price: number | null
           updated_at: string
         }
         Insert: {
           created_at?: string
+          display_name?: string | null
           game_id: string
           id?: string
           image_url: string
           package_id?: string | null
+          price?: number | null
           updated_at?: string
         }
         Update: {
           created_at?: string
+          display_name?: string | null
           game_id?: string
           id?: string
           image_url?: string
           package_id?: string | null
+          price?: number | null
           updated_at?: string
         }
         Relationships: []
@@ -763,6 +769,42 @@ export type Database = {
         }
         Relationships: []
       }
+      system_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_role: string | null
+          created_at: string
+          details: Json
+          event_type: string
+          id: string
+          ip: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_role?: string | null
+          created_at?: string
+          details?: Json
+          event_type: string
+          id?: string
+          ip?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_role?: string | null
+          created_at?: string
+          details?: Json
+          event_type?: string
+          id?: string
+          ip?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -868,6 +910,10 @@ export type Database = {
           full_name: string
           user_id: string
         }[]
+      }
+      log_event: {
+        Args: { _action: string; _details?: Json; _event_type: string }
+        Returns: string
       }
       mark_idle_sessions: { Args: never; Returns: undefined }
       open_shift: {
