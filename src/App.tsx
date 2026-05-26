@@ -120,6 +120,7 @@ const AppContent = () => {
           <Route path="orders" element={<OwnerOrdersPage />} />
           <Route path="reports" element={<OwnerReportsPage />} />
           <Route path="profile" element={<OwnerProfilePage />} />
+          <Route path="logs" element={<OwnerLogsPage />} />
           <Route path="users" element={<OwnerPage />} />
         </Route>
         <Route path="/staff" element={<StaffGuard><StaffLayout /></StaffGuard>}>
