@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Pencil } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,21 +13,37 @@ interface Slide {
   img: string;
   title: string;
   subtitle: string;
-  tag?: string;
 }
 
-const SLIDE_KEYS = ['banner_main', 'banner_2', 'banner_3', 'banner_4'];
+export type BannerScope = 'home' | 'hok' | 'mlbb';
 
-const DEFAULTS: Record<string, Slide> = {
-  banner_main: { img: bannerImg, title: 'MLBB x Naruto', subtitle: '', tag: '' },
-  banner_2: { img: hokImg, title: 'Honor of Kings', subtitle: '', tag: '' },
-  banner_3: { img: mlbbImg, title: 'Mobile Legends', subtitle: '', tag: '' },
+// Local slide ids (1..4). Storage keys are derived per scope so each page is independent.
+const SLIDE_IDS = ['1', '2', '3', '4'];
+
+const HOME_DEFAULTS: Record<string, { img: string; title?: string }> = {
+  '1': { img: bannerImg, title: 'MLBB x Naruto' },
+  '2': { img: hokImg, title: 'Honor of Kings' },
+  '3': { img: mlbbImg, title: 'Mobile Legends' },
 };
 
-const PromoBanner = () => {
+const buildKey = (scope: BannerScope, id: string, suffix?: 'title' | 'subtitle') => {
+  // Home keeps the legacy key shape used elsewhere; games use a scoped prefix.
+  const base =
+    scope === 'home'
+      ? id === '1'
+        ? 'banner_main'
+        : `banner_${id}`
+      : `${scope}_banner_${id}`;
+  return suffix ? `${base}_${suffix}` : base;
+};
+
+interface PromoBannerProps {
+  scope?: BannerScope;
+}
+
+const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
   const { t } = useLanguage();
   const { isOwner } = usePermissions();
-  const [slides, setSlides] = useState<Slide[]>([]);
   const [images, setImages] = useState<Record<string, string>>({});
   const [titles, setTitles] = useState<Record<string, string>>({});
   const [subtitles, setSubtitles] = useState<Record<string, string>>({});
@@ -35,45 +51,48 @@ const PromoBanner = () => {
   const [current, setCurrent] = useState(0);
   const [managerOpen, setManagerOpen] = useState(false);
 
-  const buildSlides = (
-    imgs: Record<string, string>,
-    ttls: Record<string, string>,
-    subs: Record<string, string>,
-  ): Slide[] => {
-    const out: Slide[] = [];
-    SLIDE_KEYS.forEach((k) => {
-      const img = imgs[k] || DEFAULTS[k]?.img || '';
-      if (!img) return;
-      out.push({
-        img,
-        title: ttls[k] ?? DEFAULTS[k]?.title ?? '',
-        subtitle: subs[k] ?? DEFAULTS[k]?.subtitle ?? t('topUpNow'),
-      });
-    });
-    return out;
-  };
+  const storageKeys = useMemo(() => SLIDE_IDS.map((id) => buildKey(scope, id)), [scope]);
 
   useEffect(() => {
     (async () => {
       const keys: string[] = [];
-      SLIDE_KEYS.forEach((k) => { keys.push(k, `${k}_title`, `${k}_subtitle`); });
+      SLIDE_IDS.forEach((id) => {
+        keys.push(buildKey(scope, id), buildKey(scope, id, 'title'), buildKey(scope, id, 'subtitle'));
+      });
       const { data } = await supabase.from('site_config').select('key, value').in('key', keys);
       const imgs: Record<string, string> = {};
       const ttls: Record<string, string> = {};
       const subs: Record<string, string> = {};
       (data || []).forEach((row: any) => {
         if (!row.value) return;
-        if (row.key.endsWith('_title')) ttls[row.key.replace('_title', '')] = row.value;
-        else if (row.key.endsWith('_subtitle')) subs[row.key.replace('_subtitle', '')] = row.value;
-        else imgs[row.key] = row.value;
+        SLIDE_IDS.forEach((id) => {
+          if (row.key === buildKey(scope, id)) imgs[id] = row.value;
+          else if (row.key === buildKey(scope, id, 'title')) ttls[id] = row.value;
+          else if (row.key === buildKey(scope, id, 'subtitle')) subs[id] = row.value;
+        });
       });
       setImages(imgs);
       setTitles(ttls);
       setSubtitles(subs);
-      setSlides(buildSlides(imgs, ttls, subs));
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [scope]);
+
+  // HARD FILTER: only slides with a non-empty image URL.
+  const slides: Slide[] = useMemo(() => {
+    const list: Slide[] = [];
+    SLIDE_IDS.forEach((id) => {
+      const fromDb = images[id];
+      const fallback = scope === 'home' ? HOME_DEFAULTS[id]?.img : undefined;
+      const img = (fromDb && fromDb.trim()) || (fallback && fallback.trim()) || '';
+      if (!img) return;
+      list.push({
+        img,
+        title: titles[id] ?? (scope === 'home' ? HOME_DEFAULTS[id]?.title ?? '' : ''),
+        subtitle: subtitles[id] ?? '',
+      });
+    });
+    return list;
+  }, [images, titles, subtitles, scope]);
 
   const hasMultiple = slides.length > 1;
 
@@ -90,14 +109,14 @@ const PromoBanner = () => {
     document.getElementById('games-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  // Build maps for dialog including all keys (so owner can add empty slots)
+  // Maps passed to dialog use slide id as the row key; dialog persists via keyForRow.
   const currentImages: Record<string, string> = {};
   const currentTitles: Record<string, string> = {};
   const currentSubtitles: Record<string, string> = {};
-  SLIDE_KEYS.forEach((k) => {
-    currentImages[k] = images[k] || '';
-    currentTitles[k] = titles[k] || '';
-    currentSubtitles[k] = subtitles[k] || '';
+  SLIDE_IDS.forEach((id) => {
+    currentImages[id] = images[id] || '';
+    currentTitles[id] = titles[id] || '';
+    currentSubtitles[id] = subtitles[id] || '';
   });
 
   if (slides.length === 0 && !isOwner) return null;
@@ -116,7 +135,11 @@ const PromoBanner = () => {
       )}
 
       {slides.length > 0 && (
-        <Carousel setApi={setApi} opts={{ loop: hasMultiple, watchDrag: hasMultiple }} className="overflow-hidden rounded-2xl">
+        <Carousel
+          setApi={setApi}
+          opts={{ loop: hasMultiple, watchDrag: hasMultiple }}
+          className="overflow-hidden rounded-2xl"
+        >
           <CarouselContent>
             {slides.map((s, i) => (
               <CarouselItem key={i}>
@@ -143,12 +166,14 @@ const PromoBanner = () => {
                         </p>
                       )}
                     </div>
-                    <button
-                      onClick={scrollToGames}
-                      className="shrink-0 px-4 py-2 rounded-full bg-primary text-primary-foreground text-xs font-display font-extrabold uppercase tracking-wider shadow-[0_0_20px_hsl(var(--primary)/0.45)] active:scale-95 transition-transform"
-                    >
-                      TOP UP
-                    </button>
+                    {scope === 'home' && (
+                      <button
+                        onClick={scrollToGames}
+                        className="shrink-0 px-4 py-2 rounded-full bg-primary text-primary-foreground text-xs font-display font-extrabold uppercase tracking-wider shadow-[0_0_20px_hsl(var(--primary)/0.45)] active:scale-95 transition-transform"
+                      >
+                        TOP UP
+                      </button>
+                    )}
                   </div>
                 </div>
               </CarouselItem>
@@ -176,7 +201,8 @@ const PromoBanner = () => {
         <BannersManagerDialog
           open={managerOpen}
           onClose={() => setManagerOpen(false)}
-          slideKeys={SLIDE_KEYS}
+          slideKeys={SLIDE_IDS}
+          keyForRow={(id, suffix) => buildKey(scope, id, suffix)}
           currentImages={currentImages}
           currentTitles={currentTitles}
           currentSubtitles={currentSubtitles}
@@ -184,7 +210,6 @@ const PromoBanner = () => {
             setImages(nImg);
             setTitles(nTtl);
             setSubtitles(nSub);
-            setSlides(buildSlides(nImg, nTtl, nSub));
           }}
         />
       )}

@@ -1,31 +1,15 @@
-import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Globe, MessageCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Globe, MessageCircle } from 'lucide-react';
 import { games, getServersForGame } from '@/lib/gameData';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Carousel, CarouselContent, CarouselItem, CarouselApi } from '@/components/ui/carousel';
 import { WA_NUMBER } from '@/lib/validation';
-import bannerImg from '@/assets/mlbb-naruto-banner.jpg';
-import hokImg from '@/assets/game-hok.jpg';
-import mlbbImg from '@/assets/game-mlbb.jpg';
-
-const slidesPool = [bannerImg, hokImg, mlbbImg, bannerImg];
+import PromoBanner, { type BannerScope } from '@/components/PromoBanner';
 
 const GamePage = () => {
   const { gameId } = useParams();
   const navigate = useNavigate();
   const { lang } = useLanguage();
   const game = games.find((g) => g.id === gameId);
-  const [api, setApi] = useState<CarouselApi | null>(null);
-  const [current, setCurrent] = useState(0);
-
-  useEffect(() => {
-    if (!api) return;
-    const onSelect = () => setCurrent(api.selectedScrollSnap());
-    api.on('select', onSelect);
-    const id = setInterval(() => api.scrollNext(), 5000);
-    return () => { clearInterval(id); api.off('select', onSelect); };
-  }, [api]);
 
   if (!game) {
     return (
@@ -38,6 +22,8 @@ const GamePage = () => {
   const BackIcon = lang === 'ar' ? ArrowRight : ArrowLeft;
   const servers = getServersForGame(game.id);
   const isHOK = game.id === 'hok';
+  const bannerScope: BannerScope | null =
+    game.id === 'hok' ? 'hok' : game.id === 'mlbb' ? 'mlbb' : null;
 
   const hokInquiryUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(
     'مرحبا انا ارغب بشحن لعبة honor of kings وعايز استفسر عن سيرفري'
@@ -62,48 +48,7 @@ const GamePage = () => {
       </header>
 
       <div className="px-5 pt-4 space-y-6 max-w-lg mx-auto">
-        <div className="relative">
-          <Carousel setApi={setApi} opts={{ loop: true }} className="overflow-hidden rounded-2xl">
-            <CarouselContent>
-              {slidesPool.map((img, i) => (
-                <CarouselItem key={i}>
-                  <div className="relative overflow-hidden rounded-2xl">
-                    <img src={img} alt={`slide-${i}`} className="w-full h-44 sm:h-56 object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-          </Carousel>
-
-          <button
-            onClick={() => api?.scrollPrev()}
-            className="absolute start-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/70 backdrop-blur-md border border-border flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
-            aria-label="Previous"
-          >
-            <ChevronLeft size={18} />
-          </button>
-          <button
-            onClick={() => api?.scrollNext()}
-            className="absolute end-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/70 backdrop-blur-md border border-border flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
-            aria-label="Next"
-          >
-            <ChevronRight size={18} />
-          </button>
-
-          <div className="flex justify-center gap-1.5 mt-2">
-            {slidesPool.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => api?.scrollTo(i)}
-                aria-label={`Slide ${i + 1}`}
-                className={`h-1.5 rounded-full transition-all ${
-                  current === i ? 'w-6 bg-primary' : 'w-1.5 bg-muted-foreground/40'
-                }`}
-              />
-            ))}
-          </div>
-        </div>
+        {bannerScope && <PromoBanner scope={bannerScope} />}
 
         <div>
           <h2 className="font-display font-extrabold text-base text-foreground mb-3">
