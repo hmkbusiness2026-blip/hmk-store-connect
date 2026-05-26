@@ -79,22 +79,27 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
     })();
   }, [scope]);
 
-  // HARD FILTER: only slides with a non-empty image URL.
+  // HARD FILTER: only render slides whose DB image URL is a non-empty trimmed string.
+  // No per-slot defaults — empty slots simply don't render.
   const slides: Slide[] = useMemo(() => {
     const list: Slide[] = [];
     SLIDE_IDS.forEach((id) => {
-      const fromDb = images[id];
-      const fallback = scope === 'home' ? HOME_DEFAULTS[id]?.img : undefined;
-      const img = (fromDb && fromDb.trim()) || (fallback && fallback.trim()) || '';
+      const img = (images[id] || '').trim();
       if (!img) return;
       list.push({
         img,
-        title: titles[id] ?? (scope === 'home' ? HOME_DEFAULTS[id]?.title ?? '' : ''),
-        subtitle: subtitles[id] ?? '',
+        title: (titles[id] || '').trim(),
+        subtitle: (subtitles[id] || '').trim(),
       });
     });
+    // First-time fallback: only when the owner has saved nothing for this scope.
+    if (list.length === 0) {
+      const fb = FIRST_TIME_FALLBACK[scope];
+      if (fb) list.push({ img: fb.img, title: fb.title || '', subtitle: '' });
+    }
     return list;
   }, [images, titles, subtitles, scope]);
+
 
   const hasMultiple = slides.length > 1;
   const autoplayRef = useRef<ReturnType<typeof setInterval> | null>(null);
