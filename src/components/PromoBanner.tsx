@@ -163,12 +163,13 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
           className="overflow-hidden rounded-2xl"
         >
           <CarouselContent>
-            {slides.map((s, i) => (
+            {slides.map((s, i) => {
+              const hasText = !!(s.title || s.subtitle);
+              const showCta = scope === 'home';
+              const showOverlay = hasText || showCta;
+              return (
               <CarouselItem key={i}>
                 <div className="relative overflow-hidden rounded-2xl glow-gold bg-muted">
-                  {/* Skeleton shimmer placeholder under the image so a slow/large image
-                      never looks like a "black screen". */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-muted via-muted-foreground/10 to-muted animate-pulse" />
                   <img
                     src={s.img}
                     alt={s.title || `slide-${i + 1}`}
@@ -176,38 +177,45 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
                     height={512}
                     loading={i === 0 ? 'eager' : 'lazy'}
                     decoding="async"
-                    className="relative w-full h-44 sm:h-56 object-cover bg-muted"
+                    className="block w-full h-44 sm:h-56 object-cover bg-muted"
+                    onLoad={() => console.log(`[PromoBanner:${scope}] slide ${i + 1} LOADED`, s.img)}
                     onError={(e) => {
+                      console.warn(`[PromoBanner:${scope}] slide ${i + 1} FAILED`, s.img);
                       const el = e.currentTarget as HTMLImageElement;
                       el.style.display = 'none';
                     }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/30 to-transparent pointer-events-none" />
-                  <div className="absolute bottom-4 start-4 end-4 flex items-end justify-between gap-3">
-                    <div className="min-w-0">
-                      {s.title && (
-                        <h2 className="text-xl font-display font-extrabold text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)] truncate">
-                          {s.title}
-                        </h2>
-                      )}
-                      {s.subtitle && (
-                        <p className="text-xs text-white/90 drop-shadow-[0_1px_4px_rgba(0,0,0,0.7)] truncate">
-                          {s.subtitle}
-                        </p>
-                      )}
-                    </div>
-                    {scope === 'home' && (
-                      <button
-                        onClick={scrollToGames}
-                        className="shrink-0 px-4 py-2 rounded-full bg-primary text-primary-foreground text-xs font-display font-extrabold uppercase tracking-wider shadow-[0_0_20px_hsl(var(--primary)/0.45)] active:scale-95 transition-transform"
-                      >
-                        TOP UP
-                      </button>
-                    )}
-                  </div>
+                  {showOverlay && (
+                    <>
+                      <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-background/90 via-background/40 to-transparent pointer-events-none" />
+                      <div className="absolute bottom-4 start-4 end-4 flex items-end justify-between gap-3">
+                        <div className="min-w-0">
+                          {s.title && (
+                            <h2 className="text-xl font-display font-extrabold text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)] truncate">
+                              {s.title}
+                            </h2>
+                          )}
+                          {s.subtitle && (
+                            <p className="text-xs text-white/90 drop-shadow-[0_1px_4px_rgba(0,0,0,0.7)] truncate">
+                              {s.subtitle}
+                            </p>
+                          )}
+                        </div>
+                        {showCta && (
+                          <button
+                            onClick={scrollToGames}
+                            className="shrink-0 px-4 py-2 rounded-full bg-primary text-primary-foreground text-xs font-display font-extrabold uppercase tracking-wider shadow-[0_0_20px_hsl(var(--primary)/0.45)] active:scale-95 transition-transform"
+                          >
+                            TOP UP
+                          </button>
+                        )}
+                      </div>
+                    </>
+                  )}
                 </div>
               </CarouselItem>
-            ))}
+              );
+            })}
           </CarouselContent>
           {hasMultiple && (
             <>
