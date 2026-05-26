@@ -39,14 +39,21 @@ const ProductsPage = () => {
     if (!gameId) return;
     supabase
       .from('product_images')
-      .select('package_id, image_url')
+      .select('package_id, image_url, display_name, price')
       .eq('game_id', gameId)
       .then(({ data }) => {
-        const map: Record<string, string> = {};
+        const imgs: Record<string, string> = {};
+        const names: Record<string, string> = {};
+        const prices: Record<string, number> = {};
         (data || []).forEach((r: any) => {
-          map[r.package_id ?? '__default__'] = r.image_url;
+          const key = r.package_id ?? '__default__';
+          if (r.image_url) imgs[key] = r.image_url;
+          if (r.display_name) names[key] = r.display_name;
+          if (r.price != null) prices[key] = Number(r.price);
         });
-        setProductImages(map);
+        setProductImages(imgs);
+        setProductNames(names);
+        setProductPrices(prices);
       });
   }, [gameId]);
 
