@@ -159,7 +159,7 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
       {slides.length > 0 && (
         <Carousel
           setApi={setApi}
-          opts={{ loop: hasMultiple, watchDrag: hasMultiple }}
+          opts={{ loop: slides.length >= 3, watchDrag: hasMultiple }}
           className="overflow-hidden rounded-2xl"
         >
           <CarouselContent>
