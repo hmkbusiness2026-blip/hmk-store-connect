@@ -130,14 +130,18 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
         }
 
         const dist = Math.abs(diffToTarget);
-        const scale = Math.max(0.8, 1 - dist * 0.4);
-        const opacity = Math.max(0.45, 1 - dist * 1.2);
+        const sign = Math.sign(diffToTarget); // <0 = slide is to the LEFT of center
+        const scale = Math.max(0.78, 1 - dist * 0.32);
+        const opacity = Math.max(0.35, 1 - dist * 1.1);
+        const rotateY = Math.max(-35, Math.min(35, -sign * dist * 35));
+        const translateX = sign * dist * 18; // px, pulls side cards inward
         const node = slideNodes[slideIndex];
         if (node) {
-          node.style.transform = `scale(${scale})`;
+          node.style.transform = `perspective(1200px) translateX(${translateX}px) rotateY(${rotateY}deg) scale(${scale})`;
           node.style.opacity = String(opacity);
-          node.style.zIndex = dist < 0.05 ? '10' : '1';
+          node.style.zIndex = dist < 0.05 ? '10' : String(Math.max(1, 5 - Math.round(dist * 5)));
         }
+
       });
     });
   }, [embla]);
