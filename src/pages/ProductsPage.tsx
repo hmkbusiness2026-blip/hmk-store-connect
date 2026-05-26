@@ -1,14 +1,14 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Minus, Plus, Gem, LogIn, Clock } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Minus, Plus, Gem, LogIn, Clock, Pencil } from 'lucide-react';
 import { games, arabicServers, hokServers, mlbbPackages, type PackageItem } from '@/lib/gameData';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStoreOnDuty } from '@/hooks/useStoreOnDuty';
 import { supabase } from '@/integrations/supabase/client';
 import { onlyDigits } from '@/lib/validation';
-import OwnerEditButton from '@/components/owner/OwnerEditButton';
-import ProductEditDialog from '@/components/owner/ProductEditDialog';
+import { usePermissions } from '@/hooks/usePermissions';
+import ProductsManagerDialog from '@/components/owner/ProductsManagerDialog';
 
 interface CartItem extends PackageItem {
   qty: number;
@@ -19,6 +19,7 @@ const ProductsPage = () => {
   const navigate = useNavigate();
   const { lang } = useLanguage();
   const { user } = useAuth();
+  const { isOwner } = usePermissions();
   const { onDuty } = useStoreOnDuty();
   const game = games.find((g) => g.id === gameId);
   const serverList = gameId === 'hok' ? hokServers : arabicServers;
@@ -28,6 +29,9 @@ const ProductsPage = () => {
   const [playerId, setPlayerId] = useState('');
   const [serverNum, setServerNum] = useState('');
   const [productImages, setProductImages] = useState<Record<string, string>>({});
+  const [productNames, setProductNames] = useState<Record<string, string>>({});
+  const [productPrices, setProductPrices] = useState<Record<string, number>>({});
+  const [managerOpen, setManagerOpen] = useState(false);
 
   const allPackages = useMemo(() => mlbbPackages.flatMap((c) => c.packages), []);
 
@@ -35,14 +39,21 @@ const ProductsPage = () => {
     if (!gameId) return;
     supabase
       .from('product_images')
-      .select('package_id, image_url')
+      .select('package_id, image_url, display_name, price')
       .eq('game_id', gameId)
       .then(({ data }) => {
-        const map: Record<string, string> = {};
+        const imgs: Record<string, string> = {};
+        const names: Record<string, string> = {};
+        const prices: Record<string, number> = {};
         (data || []).forEach((r: any) => {
-          map[r.package_id ?? '__default__'] = r.image_url;
+          const key = r.package_id ?? '__default__';
+          if (r.image_url) imgs[key] = r.image_url;
+          if (r.display_name) names[key] = r.display_name;
+          if (r.price != null) prices[key] = Number(r.price);
         });
-        setProductImages(map);
+        setProductImages(imgs);
+        setProductNames(names);
+        setProductPrices(prices);
       });
   }, [gameId]);
 
@@ -139,13 +150,27 @@ const ProductsPage = () => {
 
         {/* Products grid */}
         <div>
-          <h3 className="font-display font-bold text-sm text-foreground mb-3">
-            {lang === 'ar' ? 'اختر الباقات' : 'Choose Packages'}
-          </h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-display font-bold text-sm text-foreground">
+              {lang === 'ar' ? 'اختر الباقات' : 'Choose Packages'}
+            </h3>
+            {isOwner && (
+              <button
+                type="button"
+                onClick={() => setManagerOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/15 text-primary border border-primary/40 text-[11px] font-display font-bold hover:bg-primary/25 transition"
+              >
+                <Pencil size={12} />
+                تعديل المنتجات
+              </button>
+            )}
+          </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {allPackages.map((pkg) => {
               const inCart = cart[pkg.id];
               const img = productImages[pkg.id] || productImages['__default__'];
+              const displayName = productNames[pkg.id] ?? (pkg.diamonds ?? pkg.name);
+              const displayPrice = productPrices[pkg.id] ?? pkg.price;
               return (
                 <button
                   key={pkg.id}
@@ -169,10 +194,10 @@ const ProductsPage = () => {
                     )}
                   </div>
                   <span className="font-display font-bold text-sm text-foreground text-center">
-                    {pkg.diamonds ?? pkg.name}
+                    {displayName}
                   </span>
-                  <span className="w-full text-start text-xs font-display font-bold text-primary mt-1">
-                    {pkg.price} EGP
+                  <span dir="ltr" className="w-full text-left text-xs font-display font-bold text-primary mt-1">
+                    {displayPrice} EGP
                   </span>
 
 
@@ -205,6 +230,37 @@ const ProductsPage = () => {
             })}
           </div>
         </div>
+
+        {isOwner && gameId && (
+          <ProductsManagerDialog
+            open={managerOpen}
+            onClose={() => setManagerOpen(false)}
+            gameId={gameId}
+            onSavedAll={(summary) => {
+              setProductImages((prev) => {
+                const next = { ...prev };
+                Object.entries(summary).forEach(([id, v]) => {
+                  if (v.image_url !== undefined) next[id] = v.image_url;
+                });
+                return next;
+              });
+              setProductNames((prev) => {
+                const next = { ...prev };
+                Object.entries(summary).forEach(([id, v]) => {
+                  if (v.display_name != null) next[id] = v.display_name as string;
+                });
+                return next;
+              });
+              setProductPrices((prev) => {
+                const next = { ...prev };
+                Object.entries(summary).forEach(([id, v]) => {
+                  if (v.price != null) next[id] = v.price as number;
+                });
+                return next;
+              });
+            }}
+          />
+        )}
 
         {onDuty === false && (
           <div className="glass-card p-4 rounded-2xl border border-destructive/40 flex items-start gap-3">
