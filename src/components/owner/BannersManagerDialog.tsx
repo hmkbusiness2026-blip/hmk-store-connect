@@ -64,7 +64,7 @@ const BannersManagerDialog = ({
   const handleUpload = async (key: string, file: File) => {
     try {
       const ext = file.name.split('.').pop();
-      const path = `banners/${key}.${ext}`;
+      const path = `banners/${resolveKey(key)}.${ext}`;
       const { error } = await supabase.storage.from('site-assets').upload(path, file, { upsert: true });
       if (error) throw error;
       const { data } = supabase.storage.from('site-assets').getPublicUrl(path);
@@ -82,9 +82,9 @@ const BannersManagerDialog = ({
         const payload: { key: string; value: string; updated_at: string }[] = [];
         const now = new Date().toISOString();
         dirty.forEach((r) => {
-          payload.push({ key: r.key, value: r.url, updated_at: now });
-          payload.push({ key: `${r.key}_title`, value: r.title, updated_at: now });
-          payload.push({ key: `${r.key}_subtitle`, value: r.subtitle, updated_at: now });
+          payload.push({ key: resolveKey(r.key), value: r.url, updated_at: now });
+          payload.push({ key: resolveKey(r.key, 'title'), value: r.title, updated_at: now });
+          payload.push({ key: resolveKey(r.key, 'subtitle'), value: r.subtitle, updated_at: now });
         });
         const { error } = await supabase.from('site_config').upsert(payload);
         if (error) throw error;
