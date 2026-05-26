@@ -150,11 +150,22 @@ const BottomNav = () => {
         onSelect={async (id) => {
           await setFavoriteGame(id);
           setPickerOpen(false);
-          navigate(`/?game=${id}`);
+          navigate(`/game/${id}`);
         }}
       />
+
+      {isOwner && favoriteGame && (
+        <FavoriteIconEditDialog
+          open={iconEditOpen}
+          onClose={() => setIconEditOpen(false)}
+          gameId={favoriteGame}
+          currentImage={iconOverrides[favoriteGame]}
+          onSaved={(url) => setIconOverrides((p) => ({ ...p, [favoriteGame]: url }))}
+        />
+      )}
     </>
   );
 };
+
 
 export default BottomNav;
