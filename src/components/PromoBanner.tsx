@@ -192,6 +192,26 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
               </CarouselItem>
             ))}
           </CarouselContent>
+          {hasMultiple && (
+            <>
+              <button
+                type="button"
+                onClick={handlePrev}
+                aria-label="السابق"
+                className="absolute start-2 top-1/2 -translate-y-1/2 z-20 grid place-items-center w-9 h-9 rounded-full bg-black/45 hover:bg-black/65 text-white backdrop-blur-sm border border-white/15 transition active:scale-95"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button
+                type="button"
+                onClick={handleNext}
+                aria-label="التالي"
+                className="absolute end-2 top-1/2 -translate-y-1/2 z-20 grid place-items-center w-9 h-9 rounded-full bg-black/45 hover:bg-black/65 text-white backdrop-blur-sm border border-white/15 transition active:scale-95"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </>
+          )}
         </Carousel>
       )}
 
@@ -200,7 +220,7 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
           {slides.map((_, i) => (
             <button
               key={i}
-              onClick={() => api?.scrollTo(i)}
+              onClick={() => handleDot(i)}
               aria-label={`Slide ${i + 1}`}
               className={`h-1.5 rounded-full transition-all ${
                 current === i ? 'w-6 bg-primary' : 'w-1.5 bg-muted-foreground/40'
