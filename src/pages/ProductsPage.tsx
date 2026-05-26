@@ -7,6 +7,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useStoreOnDuty } from '@/hooks/useStoreOnDuty';
 import { supabase } from '@/integrations/supabase/client';
 import { onlyDigits } from '@/lib/validation';
+import OwnerEditButton from '@/components/owner/OwnerEditButton';
+import ProductEditDialog from '@/components/owner/ProductEditDialog';
 
 interface CartItem extends PackageItem {
   qty: number;
