@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Carousel, CarouselContent, CarouselItem, CarouselApi } from '@/components/ui/carousel';
+import OwnerEditButton from '@/components/owner/OwnerEditButton';
+import BannerEditDialog from '@/components/owner/BannerEditDialog';
 import bannerImg from '@/assets/mlbb-naruto-banner.jpg';
 import hokImg from '@/assets/game-hok.jpg';
 import mlbbImg from '@/assets/game-mlbb.jpg';
@@ -22,6 +24,8 @@ const PromoBanner = () => {
   ]);
   const [api, setApi] = useState<CarouselApi | null>(null);
   const [current, setCurrent] = useState(0);
+  const [editIdx, setEditIdx] = useState<number | null>(null);
+  const slideKeys = ['banner_main', 'banner_2', 'banner_3'];
 
   useEffect(() => {
     (async () => {
@@ -63,6 +67,7 @@ const PromoBanner = () => {
           {slides.map((s, i) => (
             <CarouselItem key={i}>
               <div className="relative overflow-hidden rounded-2xl glow-gold">
+                <OwnerEditButton onClick={() => setEditIdx(i)} label="تعديل البانر" />
                 <img
                   src={s.img}
                   alt={s.title}
@@ -102,6 +107,22 @@ const PromoBanner = () => {
           />
         ))}
       </div>
+
+      {editIdx !== null && (
+        <BannerEditDialog
+          open={editIdx !== null}
+          onClose={() => setEditIdx(null)}
+          slideKey={slideKeys[editIdx]}
+          currentImage={slides[editIdx]?.img}
+          onSaved={(url) => {
+            setSlides((prev) => {
+              const next = [...prev];
+              if (editIdx !== null) next[editIdx] = { ...next[editIdx], img: url };
+              return next;
+            });
+          }}
+        />
+      )}
     </div>
   );
 };

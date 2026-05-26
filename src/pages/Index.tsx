@@ -35,15 +35,15 @@ const Index = () => {
   }, [loading, isAdmin, adminTopup, navigate]);
 
 
-  // Legacy: favorite-game floating button still uses the inline checkout modal.
+  // Redirect legacy ?game=ID links to the new server-selection page.
   useEffect(() => {
     const g = searchParams.get('game');
     if (g) {
-      setSelectedGame(g);
       searchParams.delete('game');
       setSearchParams(searchParams, { replace: true });
+      navigate(`/game/${g}`, { replace: true });
     }
-  }, [searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams, navigate]);
 
   const onboardingKey = user ? `hmk_onboarded_${user.id}` : '';
   const alreadyOnboarded = onboardingKey ? localStorage.getItem(onboardingKey) === '1' : false;
@@ -123,6 +123,7 @@ const Index = () => {
         onSelect={async (id) => {
           await setFavoriteGame(id);
           if (onboardingKey) localStorage.setItem(onboardingKey, '1');
+          navigate(`/game/${id}`);
         }}
       />
     </div>

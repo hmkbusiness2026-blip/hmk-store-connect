@@ -1,24 +1,49 @@
 import { Home, MessageSquare, User, Star, Crown } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePermissions } from '@/hooks/usePermissions';
 import FavoriteGameModal from './FavoriteGameModal';
+import OwnerEditButton from './owner/OwnerEditButton';
+import FavoriteIconEditDialog from './owner/FavoriteIconEditDialog';
 import { games } from '@/lib/gameData';
+import { supabase } from '@/integrations/supabase/client';
 
 const BottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t, lang } = useLanguage();
   const { user, favoriteGame, setFavoriteGame } = useAuth();
+  const { isOwner } = usePermissions();
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [iconEditOpen, setIconEditOpen] = useState(false);
+  const [iconOverrides, setIconOverrides] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from('site_config')
+        .select('key, value')
+        .in('key', ['fav_icon_hok', 'fav_icon_mlbb']);
+      const map: Record<string, string> = {};
+      (data ?? []).forEach((r: any) => {
+        const id = r.key.replace('fav_icon_', '');
+        if (r.value) map[id] = r.value;
+      });
+      setIconOverrides(map);
+    })();
+  }, []);
+
   const favoriteGameData = favoriteGame ? games.find((g) => g.id === favoriteGame) : null;
+  const favIconUrl = favoriteGame ? (iconOverrides[favoriteGame] || favoriteGameData?.image) : undefined;
 
   const handleFavorite = () => {
     if (!user) return navigate('/auth');
     if (!favoriteGame) return setPickerOpen(true);
-    navigate(`/?game=${favoriteGame}`);
+    navigate(`/game/${favoriteGame}`);
   };
+
 
   const items = [
     { icon: Home, label: t('home'), path: '/' },
@@ -47,22 +72,32 @@ const BottomNav = () => {
             className="absolute left-1/2 z-50 flex flex-col items-center pointer-events-none"
             style={{ transform: 'translateX(-50%)', top: '-30px' }}
           >
-            <button
-              onClick={handleFavorite}
-              aria-label={lang === 'ar' ? 'اللعبة المفضلة' : 'Favorite Game'}
-              className="pointer-events-auto w-[60px] h-[60px] rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-[0_8px_28px_hsl(var(--primary)/0.55)] active:scale-95 transition-transform overflow-hidden"
-              style={{ border: '4px solid hsl(var(--background))' }}
-            >
-              {favoriteGameData ? (
-                <img
-                  src={favoriteGameData.image}
-                  alt={favoriteGameData.name}
-                  style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }}
+            <div className="pointer-events-auto relative">
+              <button
+                onClick={handleFavorite}
+                aria-label={lang === 'ar' ? 'اللعبة المفضلة' : 'Favorite Game'}
+                className="w-[60px] h-[60px] rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-[0_8px_28px_hsl(var(--primary)/0.55)] active:scale-95 transition-transform overflow-hidden"
+                style={{ border: '4px solid hsl(var(--background))' }}
+              >
+                {favIconUrl ? (
+                  <img
+                    src={favIconUrl}
+                    alt={favoriteGameData?.name || 'Favorite'}
+                    style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <Star size={22} strokeWidth={2.5} className="fill-current" />
+                )}
+              </button>
+              {isOwner && favoriteGame && (
+                <OwnerEditButton
+                  onClick={() => setIconEditOpen(true)}
+                  className="-top-1 -end-1"
+                  label="تعديل أيقونة لعبتي"
                 />
-              ) : (
-                <Star size={22} strokeWidth={2.5} className="fill-current" />
               )}
-            </button>
+            </div>
+
           </div>
 
           <div className="glass border-t border-border h-16 flex items-stretch">
@@ -115,11 +150,22 @@ const BottomNav = () => {
         onSelect={async (id) => {
           await setFavoriteGame(id);
           setPickerOpen(false);
-          navigate(`/?game=${id}`);
+          navigate(`/game/${id}`);
         }}
       />
+
+      {isOwner && favoriteGame && (
+        <FavoriteIconEditDialog
+          open={iconEditOpen}
+          onClose={() => setIconEditOpen(false)}
+          gameId={favoriteGame}
+          currentImage={iconOverrides[favoriteGame]}
+          onSaved={(url) => setIconOverrides((p) => ({ ...p, [favoriteGame]: url }))}
+        />
+      )}
     </>
   );
 };
+
 
 export default BottomNav;

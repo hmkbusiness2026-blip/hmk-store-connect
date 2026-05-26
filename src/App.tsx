@@ -37,6 +37,7 @@ import OwnerLeaderPage from "./pages/owner/OwnerLeaderPage";
 import OwnerOrdersPage from "./pages/owner/OwnerOrdersPage";
 import OwnerReportsPage from "./pages/owner/OwnerReportsPage";
 import OwnerProfilePage from "./pages/owner/OwnerProfilePage";
+import OwnerLogsPage from "./pages/owner/OwnerLogsPage";
 import AdminCustomize from "./pages/AdminCustomize";
 import NotFound from "./pages/NotFound";
 import StaffLayout from "./pages/staff/StaffLayout";
@@ -119,6 +120,7 @@ const AppContent = () => {
           <Route path="orders" element={<OwnerOrdersPage />} />
           <Route path="reports" element={<OwnerReportsPage />} />
           <Route path="profile" element={<OwnerProfilePage />} />
+          <Route path="logs" element={<OwnerLogsPage />} />
           <Route path="users" element={<OwnerPage />} />
         </Route>
         <Route path="/staff" element={<StaffGuard><StaffLayout /></StaffGuard>}>

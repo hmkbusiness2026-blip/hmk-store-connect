@@ -1,10 +1,11 @@
-import { Crown, BarChart3, ClipboardList, User } from 'lucide-react';
+import { Crown, BarChart3, ClipboardList, User, ScrollText } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
 const items = [
   { to: '/owner/leader', label: 'ليدر', icon: Crown },
   { to: '/owner/reports', label: 'تقارير', icon: BarChart3 },
   { to: '/owner/orders', label: 'طلبات', icon: ClipboardList },
+  { to: '/owner/logs', label: 'السجل', icon: ScrollText },
   { to: '/owner/profile', label: 'البروفايل', icon: User },
 ];
 
