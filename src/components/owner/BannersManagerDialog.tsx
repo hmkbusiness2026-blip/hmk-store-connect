@@ -63,13 +63,46 @@ const BannersManagerDialog = ({
 
   const handleUpload = async (key: string, file: File) => {
     try {
-      const ext = file.name.split('.').pop();
+      // Banners that are tens of megabytes appear as a "black slide" because
+      // the browser is still downloading them. Downscale anything > 1MB to a
+      // reasonable 1600px-wide JPEG before upload.
+      let toUpload: Blob = file;
+      let ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+      if (file.size > 1024 * 1024) {
+        try {
+          const bitmap = await createImageBitmap(file);
+          const maxW = 1600;
+          const scale = Math.min(1, maxW / bitmap.width);
+          const w = Math.round(bitmap.width * scale);
+          const h = Math.round(bitmap.height * scale);
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d')!;
+          ctx.drawImage(bitmap, 0, 0, w, h);
+          const blob: Blob = await new Promise((res) =>
+            canvas.toBlob((b) => res(b!), 'image/jpeg', 0.85)!
+          );
+          toUpload = blob;
+          ext = 'jpg';
+          console.log(`[banners] resized ${key}: ${(file.size/1024/1024).toFixed(1)}MB -> ${(blob.size/1024).toFixed(0)}KB`);
+        } catch (err) {
+          console.warn('[banners] resize failed, uploading original', err);
+        }
+      }
       const path = `banners/${resolveKey(key)}.${ext}`;
-      const { error } = await supabase.storage.from('site-assets').upload(path, file, { upsert: true });
+      const { error } = await supabase.storage
+        .from('site-assets')
+        .upload(path, toUpload, { upsert: true, contentType: toUpload.type || `image/${ext}` });
       if (error) throw error;
       const { data } = supabase.storage.from('site-assets').getPublicUrl(path);
-      update(key, { url: `${data.publicUrl}?t=${Date.now()}` });
+      const finalUrl = `${data.publicUrl}?t=${Date.now()}`;
+      console.log(`[banners] uploaded ${key} ->`, finalUrl);
+      if (!finalUrl || !data.publicUrl) {
+        throw new Error('Failed to resolve public URL');
+      }
+      update(key, { url: finalUrl });
     } catch (e: any) {
+      console.error('[banners] upload error', e);
       toast({ title: 'فشل الرفع', description: e.message, variant: 'destructive' });
     }
   };
@@ -87,6 +120,7 @@ const BannersManagerDialog = ({
         payload.push({ key: resolveKey(r.key, 'title'), value: r.title ?? '', updated_at: now });
         payload.push({ key: resolveKey(r.key, 'subtitle'), value: r.subtitle ?? '', updated_at: now });
       });
+      console.log('[banners] saving payload:', payload.filter(p => !p.key.endsWith('_title') && !p.key.endsWith('_subtitle')));
       const { error } = await supabase
         .from('site_config')
         .upsert(payload, { onConflict: 'key' });
