@@ -49,6 +49,16 @@ const AuthPage = () => {
       return;
     }
 
+    // Block weak passwords on signup only
+    if (!isLogin && !isStaffMode && isWeakPassword(password)) {
+      const msg = lang === 'ar'
+        ? 'كلمة المرور ضعيفة جداً. استخدم 6 أحرف وأرقام مختلفة على الأقل.'
+        : 'Password is too weak. Use at least 6 mixed letters and numbers.';
+      setPwError(msg);
+      toast({ title: t('error'), description: msg, variant: 'destructive' });
+      return;
+    }
+
     setLoading(true);
 
     // For LOGIN paths, enforce lockout
