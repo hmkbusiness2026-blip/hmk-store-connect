@@ -20,11 +20,13 @@ export type BannerScope = 'home' | 'hok' | 'mlbb';
 // Local slide ids (1..4). Storage keys are derived per scope so each page is independent.
 const SLIDE_IDS = ['1', '2', '3', '4'];
 
-const HOME_DEFAULTS: Record<string, { img: string; title?: string }> = {
-  '1': { img: bannerImg, title: 'MLBB x Naruto' },
-  '2': { img: hokImg, title: 'Honor of Kings' },
-  '3': { img: mlbbImg, title: 'Mobile Legends' },
+// First-time fallback (only used when the owner has saved NOTHING for this scope).
+const FIRST_TIME_FALLBACK: Record<BannerScope, { img: string; title?: string } | null> = {
+  home: { img: bannerImg, title: 'MLBB x Naruto' },
+  hok: null,
+  mlbb: null,
 };
+
 
 const buildKey = (scope: BannerScope, id: string, suffix?: 'title' | 'subtitle') => {
   // Home keeps the legacy key shape used elsewhere; games use a scoped prefix.
