@@ -29,6 +29,9 @@ const ProductsPage = () => {
   const [playerId, setPlayerId] = useState('');
   const [serverNum, setServerNum] = useState('');
   const [productImages, setProductImages] = useState<Record<string, string>>({});
+  const [productNames, setProductNames] = useState<Record<string, string>>({});
+  const [productPrices, setProductPrices] = useState<Record<string, number>>({});
+  const [managerOpen, setManagerOpen] = useState(false);
 
   const allPackages = useMemo(() => mlbbPackages.flatMap((c) => c.packages), []);
 
