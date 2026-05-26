@@ -1,24 +1,49 @@
 import { Home, MessageSquare, User, Star, Crown } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePermissions } from '@/hooks/usePermissions';
 import FavoriteGameModal from './FavoriteGameModal';
+import OwnerEditButton from './owner/OwnerEditButton';
+import FavoriteIconEditDialog from './owner/FavoriteIconEditDialog';
 import { games } from '@/lib/gameData';
+import { supabase } from '@/integrations/supabase/client';
 
 const BottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t, lang } = useLanguage();
   const { user, favoriteGame, setFavoriteGame } = useAuth();
+  const { isOwner } = usePermissions();
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [iconEditOpen, setIconEditOpen] = useState(false);
+  const [iconOverrides, setIconOverrides] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from('site_config')
+        .select('key, value')
+        .in('key', ['fav_icon_hok', 'fav_icon_mlbb']);
+      const map: Record<string, string> = {};
+      (data ?? []).forEach((r: any) => {
+        const id = r.key.replace('fav_icon_', '');
+        if (r.value) map[id] = r.value;
+      });
+      setIconOverrides(map);
+    })();
+  }, []);
+
   const favoriteGameData = favoriteGame ? games.find((g) => g.id === favoriteGame) : null;
+  const favIconUrl = favoriteGame ? (iconOverrides[favoriteGame] || favoriteGameData?.image) : undefined;
 
   const handleFavorite = () => {
     if (!user) return navigate('/auth');
     if (!favoriteGame) return setPickerOpen(true);
-    navigate(`/?game=${favoriteGame}`);
+    navigate(`/game/${favoriteGame}`);
   };
+
 
   const items = [
     { icon: Home, label: t('home'), path: '/' },
