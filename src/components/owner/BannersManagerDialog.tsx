@@ -8,18 +8,34 @@ interface SlideRow {
   key: string;
   label: string;
   url: string;
+  title: string;
+  subtitle: string;
   dirty?: boolean;
 }
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  slideKeys: string[];               // e.g. ['banner_main','banner_2','banner_3']
+  slideKeys: string[];
   currentImages: Record<string, string>;
-  onSavedAll?: (next: Record<string, string>) => void;
+  currentTitles?: Record<string, string>;
+  currentSubtitles?: Record<string, string>;
+  onSavedAll?: (next: {
+    images: Record<string, string>;
+    titles: Record<string, string>;
+    subtitles: Record<string, string>;
+  }) => void;
 }
 
-const BannersManagerDialog = ({ open, onClose, slideKeys, currentImages, onSavedAll }: Props) => {
+const BannersManagerDialog = ({
+  open,
+  onClose,
+  slideKeys,
+  currentImages,
+  currentTitles = {},
+  currentSubtitles = {},
+  onSavedAll,
+}: Props) => {
   const { toast } = useToast();
   const [rows, setRows] = useState<SlideRow[]>([]);
   const [saving, setSaving] = useState(false);
@@ -31,9 +47,11 @@ const BannersManagerDialog = ({ open, onClose, slideKeys, currentImages, onSaved
         key: k,
         label: `الشريحة ${i + 1}`,
         url: currentImages[k] || '',
+        title: currentTitles[k] || '',
+        subtitle: currentSubtitles[k] || '',
       })),
     );
-  }, [open, slideKeys, currentImages]);
+  }, [open, slideKeys, currentImages, currentTitles, currentSubtitles]);
 
   const update = (key: string, patch: Partial<SlideRow>) =>
     setRows((prev) => prev.map((r) => (r.key === key ? { ...r, ...patch, dirty: true } : r)));
@@ -56,16 +74,25 @@ const BannersManagerDialog = ({ open, onClose, slideKeys, currentImages, onSaved
     try {
       const dirty = rows.filter((r) => r.dirty);
       if (dirty.length) {
-        const { error } = await supabase
-          .from('site_config')
-          .upsert(
-            dirty.map((r) => ({ key: r.key, value: r.url, updated_at: new Date().toISOString() })),
-          );
+        const payload: { key: string; value: string; updated_at: string }[] = [];
+        const now = new Date().toISOString();
+        dirty.forEach((r) => {
+          payload.push({ key: r.key, value: r.url, updated_at: now });
+          payload.push({ key: `${r.key}_title`, value: r.title, updated_at: now });
+          payload.push({ key: `${r.key}_subtitle`, value: r.subtitle, updated_at: now });
+        });
+        const { error } = await supabase.from('site_config').upsert(payload);
         if (error) throw error;
       }
-      const next: Record<string, string> = {};
-      rows.forEach((r) => (next[r.key] = r.url));
-      onSavedAll?.(next);
+      const images: Record<string, string> = {};
+      const titles: Record<string, string> = {};
+      const subtitles: Record<string, string> = {};
+      rows.forEach((r) => {
+        images[r.key] = r.url;
+        titles[r.key] = r.title;
+        subtitles[r.key] = r.subtitle;
+      });
+      onSavedAll?.({ images, titles, subtitles });
       toast({ title: 'تم حفظ التعديلات' });
       onClose();
     } catch (e: any) {
@@ -82,29 +109,42 @@ const BannersManagerDialog = ({ open, onClose, slideKeys, currentImages, onSaved
           <DialogTitle className="font-display gradient-text">إدارة البانرات</DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto space-y-3">
+        <div className="flex-1 overflow-y-auto space-y-3 pr-1">
           {rows.map((r) => (
             <div key={r.key} className="glass-card rounded-xl p-3 space-y-2 border border-border">
               <div className="flex items-center justify-between">
                 <span className="font-display font-bold text-xs text-foreground">{r.label}</span>
-                {r.url && (
+                {(r.url || r.title || r.subtitle) && (
                   <button
                     type="button"
-                    onClick={() => update(r.key, { url: '' })}
+                    onClick={() => update(r.key, { url: '', title: '', subtitle: '' })}
                     className="text-destructive hover:opacity-80"
                     aria-label="حذف"
+                    title="حذف الشريحة"
                   >
                     <Trash2 size={14} />
                   </button>
                 )}
               </div>
-              <div className="w-full h-24 rounded-lg overflow-hidden bg-muted grid place-items-center">
+
+              <div className="w-full h-24 rounded-lg overflow-hidden bg-muted grid place-items-center relative">
                 {r.url ? (
-                  <img src={r.url} alt="" className="w-full h-full object-cover" />
+                  <>
+                    <img src={r.url} alt="" className="w-full h-full object-cover" />
+                    {(r.title || r.subtitle) && (
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end p-2">
+                        <div className="text-white drop-shadow-md">
+                          {r.title && <div className="text-[11px] font-display font-extrabold leading-tight">{r.title}</div>}
+                          {r.subtitle && <div className="text-[9px] opacity-90 truncate">{r.subtitle}</div>}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <ImageIcon className="text-muted-foreground" />
                 )}
               </div>
+
               <div className="flex gap-2">
                 <label className="flex-1 cursor-pointer px-2 py-2 rounded-md border-2 border-dashed border-border hover:border-primary/40 text-[11px] text-muted-foreground flex items-center justify-center gap-1">
                   <Upload size={12} /> رفع صورة
@@ -122,6 +162,19 @@ const BannersManagerDialog = ({ open, onClose, slideKeys, currentImages, onSaved
                   className="flex-1 px-2 py-2 rounded-md bg-muted border border-border text-xs"
                 />
               </div>
+
+              <input
+                value={r.title}
+                onChange={(e) => update(r.key, { title: e.target.value })}
+                placeholder="عنوان رئيسي"
+                className="w-full px-2 py-2 rounded-md bg-muted border border-border text-xs font-display font-bold"
+              />
+              <input
+                value={r.subtitle}
+                onChange={(e) => update(r.key, { subtitle: e.target.value })}
+                placeholder="نص فرعي"
+                className="w-full px-2 py-2 rounded-md bg-muted border border-border text-xs"
+              />
             </div>
           ))}
         </div>
