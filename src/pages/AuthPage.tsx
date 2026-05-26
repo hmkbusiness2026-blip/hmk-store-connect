@@ -6,7 +6,7 @@ import { Loader2, Phone, Lock, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { onlyDigits, sanitizePassword, isValidPassword } from '@/lib/validation';
+import { onlyDigits, sanitizePassword, isValidPassword, isWeakPassword } from '@/lib/validation';
 import hmkLogo from '@/assets/hmk-logo.png';
 
 const AuthPage = () => {
@@ -44,6 +44,16 @@ const AuthPage = () => {
       const msg = lang === 'ar'
         ? 'الرموز غير مسموح بها. الحد الأقصى 14 حرف ورقم.'
         : 'Symbols are not allowed. Max 14 letters/numbers.';
+      setPwError(msg);
+      toast({ title: t('error'), description: msg, variant: 'destructive' });
+      return;
+    }
+
+    // Block weak passwords on signup only
+    if (!isLogin && !isStaffMode && isWeakPassword(password)) {
+      const msg = lang === 'ar'
+        ? 'كلمة المرور ضعيفة جداً. استخدم 6 أحرف وأرقام مختلفة على الأقل.'
+        : 'Password is too weak. Use at least 6 mixed letters and numbers.';
       setPwError(msg);
       toast({ title: t('error'), description: msg, variant: 'destructive' });
       return;
