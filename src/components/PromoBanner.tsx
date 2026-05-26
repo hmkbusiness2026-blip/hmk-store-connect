@@ -163,16 +163,24 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
           <CarouselContent>
             {slides.map((s, i) => (
               <CarouselItem key={i}>
-                <div className="relative overflow-hidden rounded-2xl glow-gold">
+                <div className="relative overflow-hidden rounded-2xl glow-gold bg-muted">
+                  {/* Skeleton shimmer placeholder under the image so a slow/large image
+                      never looks like a "black screen". */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-muted via-muted-foreground/10 to-muted animate-pulse" />
                   <img
                     src={s.img}
                     alt={s.title || `slide-${i + 1}`}
                     width={1280}
                     height={512}
-                    className="w-full h-44 sm:h-56 object-cover"
-                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '0'; }}
+                    loading={i === 0 ? 'eager' : 'lazy'}
+                    decoding="async"
+                    className="relative w-full h-44 sm:h-56 object-cover bg-muted"
+                    onError={(e) => {
+                      const el = e.currentTarget as HTMLImageElement;
+                      el.style.display = 'none';
+                    }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/30 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/30 to-transparent pointer-events-none" />
                   <div className="absolute bottom-4 start-4 end-4 flex items-end justify-between gap-3">
                     <div className="min-w-0">
                       {s.title && (
