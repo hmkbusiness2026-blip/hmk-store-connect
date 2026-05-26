@@ -107,6 +107,22 @@ const PromoBanner = () => {
           />
         ))}
       </div>
+
+      {editIdx !== null && (
+        <BannerEditDialog
+          open={editIdx !== null}
+          onClose={() => setEditIdx(null)}
+          slideKey={slideKeys[editIdx]}
+          currentImage={slides[editIdx]?.img}
+          onSaved={(url) => {
+            setSlides((prev) => {
+              const next = [...prev];
+              if (editIdx !== null) next[editIdx] = { ...next[editIdx], img: url };
+              return next;
+            });
+          }}
+        />
+      )}
     </div>
   );
 };
