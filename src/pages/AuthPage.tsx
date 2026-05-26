@@ -6,7 +6,7 @@ import { Loader2, Phone, Lock, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { onlyDigits, sanitizePassword, isValidPassword } from '@/lib/validation';
+import { onlyDigits, sanitizePassword, isValidPassword, isWeakPassword } from '@/lib/validation';
 import hmkLogo from '@/assets/hmk-logo.png';
 
 const AuthPage = () => {
