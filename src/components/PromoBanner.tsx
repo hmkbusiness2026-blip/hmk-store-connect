@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Carousel, CarouselContent, CarouselItem, CarouselApi } from '@/components/ui/carousel';
+import OwnerEditButton from '@/components/owner/OwnerEditButton';
+import BannerEditDialog from '@/components/owner/BannerEditDialog';
 import bannerImg from '@/assets/mlbb-naruto-banner.jpg';
 import hokImg from '@/assets/game-hok.jpg';
 import mlbbImg from '@/assets/game-mlbb.jpg';
