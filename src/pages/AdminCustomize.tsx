@@ -234,7 +234,17 @@ const AdminCustomize = () => {
         onClose={() => setBannersOpen(false)}
         slideKeys={SLIDE_KEYS}
         currentImages={currentBannerImages}
-        onSavedAll={(next) => setConfig((p) => ({ ...p, ...next }))}
+        currentTitles={currentBannerTitles}
+        currentSubtitles={currentBannerSubtitles}
+        onSavedAll={({ images, titles, subtitles }) => {
+          setConfig((p) => {
+            const next = { ...p };
+            Object.entries(images).forEach(([k, v]) => { next[k] = v; });
+            Object.entries(titles).forEach(([k, v]) => { next[`${k}_title`] = v; });
+            Object.entries(subtitles).forEach(([k, v]) => { next[`${k}_subtitle`] = v; });
+            return next;
+          });
+        }}
       />
       <FavoriteIconEditDialog
         open={favOpen}
