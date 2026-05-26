@@ -169,22 +169,27 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
               const showOverlay = hasText || showCta;
               return (
               <CarouselItem key={i}>
-                <div className="relative overflow-hidden rounded-2xl glow-gold bg-muted">
+                <div className="relative overflow-hidden rounded-2xl glow-gold" style={{ backgroundColor: '#e5e7eb' }}>
                   <img
                     src={s.img}
                     alt={s.title || `slide-${i + 1}`}
                     width={1280}
                     height={512}
-                    loading={i === 0 ? 'eager' : 'lazy'}
+                    loading="eager"
                     decoding="async"
-                    className="block w-full h-44 sm:h-56 object-cover bg-muted"
+                    className="block w-full h-44 sm:h-56 object-cover"
+                    style={{ backgroundColor: '#e5e7eb' }}
                     onLoad={() => console.log(`[PromoBanner:${scope}] slide ${i + 1} LOADED`, s.img)}
                     onError={(e) => {
                       console.warn(`[PromoBanner:${scope}] slide ${i + 1} FAILED`, s.img);
-                      const el = e.currentTarget as HTMLImageElement;
-                      el.style.display = 'none';
                     }}
                   />
+                  {isOwner && (
+                    <div className="absolute top-2 start-2 z-30 max-w-[70%] px-2 py-1 rounded bg-red-600 text-white text-[10px] font-mono break-all leading-tight">
+                      DEBUG #{i + 1}: {s.img || 'NULL'}
+                    </div>
+                  )}
+
                   {showOverlay && (
                     <>
                       <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
