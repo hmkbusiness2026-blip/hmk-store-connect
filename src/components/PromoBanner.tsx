@@ -220,27 +220,25 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
               {slides.map((s, i) => (
                 <div
                   key={i}
-                  className="relative shrink-0 grow-0 basis-[80%] sm:basis-[70%] px-2 transition-[transform,opacity] duration-300 ease-out will-change-transform"
+                  className="relative shrink-0 grow-0 basis-[70%] sm:basis-[55%] md:basis-[42%] lg:basis-[32%] px-2 transition-[transform,opacity] duration-300 ease-out will-change-transform"
                 >
                   <div
-                    className="relative overflow-hidden rounded-2xl glow-gold"
+                    className="relative overflow-hidden rounded-2xl glow-gold aspect-[3/4] mx-auto"
                     style={{ backgroundColor: '#e5e7eb' }}
                   >
                     <img
                       src={s.img}
                       alt={`slide-${i + 1}`}
-                      width={1280}
-                      height={512}
                       loading="eager"
                       decoding="async"
-                      className="block w-full h-44 sm:h-56 object-cover"
+                      className="absolute inset-0 w-full h-full object-cover"
                       style={{ backgroundColor: '#e5e7eb' }}
                     />
                     {i === selected && (
-                      <div className="absolute inset-x-0 bottom-3 flex justify-center pointer-events-none">
+                      <div className="absolute inset-x-0 bottom-4 flex justify-center pointer-events-none">
                         <button
                           onClick={() => handleCta(s)}
-                          className="pointer-events-auto px-5 py-2 rounded-full bg-primary text-primary-foreground text-xs font-display font-extrabold uppercase tracking-wider shadow-[0_0_20px_hsl(var(--primary)/0.55)] active:scale-95 transition-transform"
+                          className="pointer-events-auto px-6 py-2.5 rounded-full bg-primary text-primary-foreground text-xs font-display font-extrabold uppercase tracking-wider shadow-[0_0_22px_hsl(var(--primary)/0.6)] active:scale-95 transition-transform"
                         >
                           {s.btnText}
                         </button>
