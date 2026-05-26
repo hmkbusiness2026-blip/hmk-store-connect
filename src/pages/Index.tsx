@@ -123,6 +123,7 @@ const Index = () => {
         onSelect={async (id) => {
           await setFavoriteGame(id);
           if (onboardingKey) localStorage.setItem(onboardingKey, '1');
+          navigate(`/game/${id}`);
         }}
       />
     </div>
