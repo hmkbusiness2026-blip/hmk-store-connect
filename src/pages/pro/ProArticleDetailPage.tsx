@@ -40,10 +40,21 @@ const ProArticleDetailPage = () => {
     };
   }, []);
 
+  const sanitizedHtml = useMemo(
+    () =>
+      DOMPurify.sanitize(article?.content || '', {
+        ALLOWED_TAGS: ['p','br','b','strong','i','em','u','s','h1','h2','h3','h4','ul','ol','li','blockquote','code','pre','a','img','table','thead','tbody','tr','th','td','span','div','hr'],
+        ALLOWED_ATTR: ['href','src','alt','title','target','rel','colspan','rowspan','class','style'],
+        ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel|data:image\/):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+      }),
+    [article?.content]
+  );
+
   if (!statusLoading && !status.is_pro) {
     navigate('/pro', { replace: true });
     return null;
   }
+
 
   return (
     <div className="min-h-screen pb-20 px-4 pt-4 max-w-lg mx-auto relative select-none" dir="rtl"
