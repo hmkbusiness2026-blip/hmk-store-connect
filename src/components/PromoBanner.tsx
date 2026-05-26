@@ -95,15 +95,28 @@ const PromoBanner = ({ scope = 'home' }: PromoBannerProps) => {
   }, [images, titles, subtitles, scope]);
 
   const hasMultiple = slides.length > 1;
+  const autoplayRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const startAutoplay = useCallback(() => {
+    if (!api || !hasMultiple) return;
+    if (autoplayRef.current) clearInterval(autoplayRef.current);
+    autoplayRef.current = setInterval(() => api.scrollNext(), 15000);
+  }, [api, hasMultiple]);
 
   useEffect(() => {
     if (!api) return;
     const onSelect = () => setCurrent(api.selectedScrollSnap());
     api.on('select', onSelect);
-    if (!hasMultiple) return () => api.off('select', onSelect);
-    const id = setInterval(() => api.scrollNext(), 5000);
-    return () => { clearInterval(id); api.off('select', onSelect); };
-  }, [api, hasMultiple]);
+    startAutoplay();
+    return () => {
+      if (autoplayRef.current) clearInterval(autoplayRef.current);
+      api.off('select', onSelect);
+    };
+  }, [api, startAutoplay]);
+
+  const handlePrev = () => { api?.scrollPrev(); startAutoplay(); };
+  const handleNext = () => { api?.scrollNext(); startAutoplay(); };
+  const handleDot = (i: number) => { api?.scrollTo(i); startAutoplay(); };
 
   const scrollToGames = () => {
     document.getElementById('games-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
