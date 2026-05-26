@@ -297,6 +297,43 @@ const AdminCustomize = () => {
           gameId={productsOpen}
         />
       )}
+
+      {gameBannersOpen && (() => {
+        const scope = gameBannersOpen;
+        const ids = ['1', '2', '3', '4'];
+        const imgs: Record<string, string> = {};
+        const ttls: Record<string, string> = {};
+        const subs: Record<string, string> = {};
+        ids.forEach((id) => {
+          const base = `${scope}_banner_${id}`;
+          imgs[id] = config[base] || '';
+          ttls[id] = config[`${base}_title`] || '';
+          subs[id] = config[`${base}_subtitle`] || '';
+        });
+        return (
+          <BannersManagerDialog
+            open={!!gameBannersOpen}
+            onClose={() => setGameBannersOpen(null)}
+            slideKeys={ids}
+            keyForRow={(id, suffix) => {
+              const base = `${scope}_banner_${id}`;
+              return suffix ? `${base}_${suffix}` : base;
+            }}
+            currentImages={imgs}
+            currentTitles={ttls}
+            currentSubtitles={subs}
+            onSavedAll={({ images, titles, subtitles }) => {
+              setConfig((p) => {
+                const next = { ...p };
+                Object.entries(images).forEach(([id, v]) => { next[`${scope}_banner_${id}`] = v; });
+                Object.entries(titles).forEach(([id, v]) => { next[`${scope}_banner_${id}_title`] = v; });
+                Object.entries(subtitles).forEach(([id, v]) => { next[`${scope}_banner_${id}_subtitle`] = v; });
+                return next;
+              });
+            }}
+          />
+        );
+      })()}
     </div>
   );
 };
