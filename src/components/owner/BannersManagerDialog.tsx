@@ -17,6 +17,8 @@ interface Props {
   open: boolean;
   onClose: () => void;
   slideKeys: string[];
+  /** Maps a row key (+ optional suffix) to the actual site_config key. Defaults to identity. */
+  keyForRow?: (rowKey: string, suffix?: 'title' | 'subtitle') => string;
   currentImages: Record<string, string>;
   currentTitles?: Record<string, string>;
   currentSubtitles?: Record<string, string>;
