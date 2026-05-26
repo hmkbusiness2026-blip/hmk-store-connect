@@ -19,6 +19,7 @@ const ProductsPage = () => {
   const navigate = useNavigate();
   const { lang } = useLanguage();
   const { user } = useAuth();
+  const { isOwner } = usePermissions();
   const { onDuty } = useStoreOnDuty();
   const game = games.find((g) => g.id === gameId);
   const serverList = gameId === 'hok' ? hokServers : arabicServers;
