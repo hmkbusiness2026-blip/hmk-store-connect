@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { LogOut, User, Shield, Crown, Star } from 'lucide-react';
+import { LogOut, User, Shield, Crown, Star, Gamepad2, Loader2, Save } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import FavoriteGameModal from '@/components/FavoriteGameModal';
+import DigitsInput from '@/components/DigitsInput';
+import { useGameProfile } from '@/hooks/useGameProfile';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const gameLabel = (id: string | null, lang: 'ar' | 'en') => {
   if (id === 'hok') return lang === 'ar' ? 'هونر أوف كينجز' : 'Honor of Kings';
