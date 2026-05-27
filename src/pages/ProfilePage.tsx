@@ -20,10 +20,40 @@ const ProfilePage = () => {
   const { t, lang } = useLanguage();
   const navigate = useNavigate();
   const [pickerOpen, setPickerOpen] = useState(false);
+  const { toast } = useToast();
+  const { data: gameData, save: saveGame, loading: gameLoading } = useGameProfile();
+
+  const [mlbbId, setMlbbId] = useState('');
+  const [mlbbServer, setMlbbServer] = useState('');
+  const [hokUid, setHokUid] = useState('');
+  const [savingMlbb, setSavingMlbb] = useState(false);
+  const [savingHok, setSavingHok] = useState(false);
+
+  useEffect(() => {
+    setMlbbId(gameData.mlbb_id);
+    setMlbbServer(gameData.mlbb_server);
+    setHokUid(gameData.hok_uid);
+  }, [gameData]);
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
+  };
+
+  const saveMlbb = async () => {
+    setSavingMlbb(true);
+    const { error } = await saveGame({ mlbb_id: mlbbId, mlbb_server: mlbbServer });
+    setSavingMlbb(false);
+    if (error) return toast({ title: 'خطأ في الحفظ', variant: 'destructive' });
+    toast({ title: 'تم حفظ بيانات Mobile Legends' });
+  };
+
+  const saveHok = async () => {
+    setSavingHok(true);
+    const { error } = await saveGame({ hok_uid: hokUid });
+    setSavingHok(false);
+    if (error) return toast({ title: 'خطأ في الحفظ', variant: 'destructive' });
+    toast({ title: 'تم حفظ بيانات Honor of Kings' });
   };
 
   return (
