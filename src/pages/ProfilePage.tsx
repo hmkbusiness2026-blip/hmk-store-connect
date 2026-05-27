@@ -88,6 +88,47 @@ const ProfilePage = () => {
         </span>
       </button>
 
+      {user && (
+        <div className="glass-card p-4 space-y-4" dir="rtl">
+          <div className="flex items-center gap-2">
+            <Gamepad2 size={18} className="text-primary" />
+            <h2 className="font-display font-extrabold text-sm">بيانات ألعابي</h2>
+            <span className="text-[10px] text-muted-foreground">(اختياري)</span>
+          </div>
+
+          {/* Mobile Legends */}
+          <div className="space-y-2 pb-3 border-b border-border">
+            <p className="font-display font-bold text-xs text-foreground">Mobile Legends</p>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[11px] text-muted-foreground mb-1 block">الآيدي</label>
+                <DigitsInput value={mlbbId} onChange={setMlbbId} placeholder="123456789" maxLength={15} disabled={gameLoading} />
+              </div>
+              <div>
+                <label className="text-[11px] text-muted-foreground mb-1 block">السيرفر</label>
+                <DigitsInput value={mlbbServer} onChange={setMlbbServer} placeholder="1234" maxLength={8} disabled={gameLoading} />
+              </div>
+            </div>
+            <Button onClick={saveMlbb} disabled={savingMlbb || gameLoading} size="sm" className="w-full mt-2">
+              {savingMlbb ? <Loader2 size={14} className="animate-spin" /> : <><Save size={12} className="mr-1" /> حفظ</>}
+            </Button>
+          </div>
+
+          {/* Honor of Kings */}
+          <div className="space-y-2">
+            <p className="font-display font-bold text-xs text-foreground">Honor of Kings</p>
+            <div>
+              <label className="text-[11px] text-muted-foreground mb-1 block">معرف اللاعب (UID)</label>
+              <DigitsInput value={hokUid} onChange={setHokUid} placeholder="123456789" maxLength={15} disabled={gameLoading} />
+            </div>
+            <Button onClick={saveHok} disabled={savingHok || gameLoading} size="sm" className="w-full mt-2">
+              {savingHok ? <Loader2 size={14} className="animate-spin" /> : <><Save size={12} className="mr-1" /> حفظ</>}
+            </Button>
+          </div>
+        </div>
+      )}
+
+
       {(userRole === 'admin' || (userRole as string) === 'owner') && (
         <button
           onClick={() => navigate('/admin')}
