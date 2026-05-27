@@ -1,14 +1,16 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Minus, Plus, Gem, LogIn, Clock, Pencil } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Minus, Plus, Gem, LogIn, Clock, Pencil, UserCog } from 'lucide-react';
 import { games, arabicServers, hokServers, mlbbPackages, type PackageItem } from '@/lib/gameData';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStoreOnDuty } from '@/hooks/useStoreOnDuty';
 import { supabase } from '@/integrations/supabase/client';
-import { onlyDigits } from '@/lib/validation';
 import { usePermissions } from '@/hooks/usePermissions';
 import ProductsManagerDialog from '@/components/owner/ProductsManagerDialog';
+import DigitsInput from '@/components/DigitsInput';
+import { useGameProfile } from '@/hooks/useGameProfile';
+import { useToast } from '@/hooks/use-toast';
 
 interface CartItem extends PackageItem {
   qty: number;
