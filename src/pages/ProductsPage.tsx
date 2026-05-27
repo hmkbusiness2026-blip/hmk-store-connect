@@ -23,9 +23,12 @@ const ProductsPage = () => {
   const { user } = useAuth();
   const { isOwner } = usePermissions();
   const { onDuty } = useStoreOnDuty();
+  const { data: gameProfile } = useGameProfile();
+  const { toast } = useToast();
   const game = games.find((g) => g.id === gameId);
   const serverList = gameId === 'hok' ? hokServers : arabicServers;
   const server = serverList.find((s) => s.id === serverId);
+  const isHok = gameId === 'hok';
 
   const [cart, setCart] = useState<Record<string, CartItem>>({});
   const [playerId, setPlayerId] = useState('');
