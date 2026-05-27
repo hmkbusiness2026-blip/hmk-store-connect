@@ -311,35 +311,43 @@ const ProductsPage = () => {
           <>
             {/* Player info form */}
             <div className="glass-card p-4 rounded-2xl space-y-3">
+              <button
+                type="button"
+                onClick={handleUseMyInfo}
+                disabled={onDuty === false}
+                className="w-full flex items-center justify-center gap-2 py-2 rounded-lg border border-primary/40 bg-primary/10 text-primary text-xs font-display font-bold hover:bg-primary/20 transition disabled:opacity-50"
+              >
+                <UserCog size={14} />
+                استخدم معلوماتي
+              </button>
               <div>
                 <label className="text-xs font-display font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">
-                  {lang === 'ar' ? 'الايدي' : 'Player ID'}
+                  {isHok ? (lang === 'ar' ? 'معرف اللاعب (UID)' : 'Player UID') : (lang === 'ar' ? 'الايدي' : 'Player ID')}
                 </label>
-                <input
-                  type="text"
-                  inputMode="numeric"
+                <DigitsInput
                   placeholder="123456780"
                   value={playerId}
                   disabled={onDuty === false}
-                  onChange={(e) => setPlayerId(onlyDigits(e.target.value))}
-                  className="w-full px-3 py-2.5 rounded-md bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  onChange={setPlayerId}
+                  maxLength={15}
                 />
               </div>
-              <div>
-                <label className="text-xs font-display font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">
-                  {lang === 'ar' ? 'السيرفر' : 'Server'}
-                </label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="1234"
-                  value={serverNum}
-                  disabled={onDuty === false}
-                  onChange={(e) => setServerNum(onlyDigits(e.target.value))}
-                  className="w-full px-3 py-2.5 rounded-md bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-              </div>
+              {!isHok && (
+                <div>
+                  <label className="text-xs font-display font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">
+                    {lang === 'ar' ? 'السيرفر' : 'Server'}
+                  </label>
+                  <DigitsInput
+                    placeholder="1234"
+                    value={serverNum}
+                    disabled={onDuty === false}
+                    onChange={setServerNum}
+                    maxLength={8}
+                  />
+                </div>
+              )}
             </div>
+
 
             {onDuty !== false && (
               <button
