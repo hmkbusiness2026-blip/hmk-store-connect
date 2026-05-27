@@ -107,7 +107,7 @@ const BottomNav = () => {
                 icon={Crown}
                 label="PRO"
                 active={location.pathname.startsWith('/pro')}
-                onClick={() => navigate(user ? '/pro' : '/auth')}
+                onClick={() => navigate('/pro')}
               />
               <NavBtn
                 icon={items[0].icon}
