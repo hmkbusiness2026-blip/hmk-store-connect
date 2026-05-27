@@ -92,7 +92,33 @@ const ProductsPage = () => {
     });
   };
 
-  const canCheckout = totalItems > 0 && playerId.trim().length > 0 && serverNum.trim().length > 0 && onDuty === true;
+  const canCheckout = totalItems > 0 && playerId.trim().length > 0 && (isHok || serverNum.trim().length > 0) && onDuty === true;
+
+  const handleUseMyInfo = () => {
+    if (!user) {
+      toast({ title: 'سجل دخولك أولاً لاستخدام بياناتك المحفوظة' });
+      navigate('/auth');
+      return;
+    }
+    if (isHok) {
+      if (!gameProfile.hok_uid) {
+        toast({ title: 'لم تحفظ بيانات Honor of Kings بعد', description: 'سيتم نقلك لصفحة الملف الشخصي' });
+        navigate('/profile');
+        return;
+      }
+      setPlayerId(gameProfile.hok_uid);
+      toast({ title: 'تم استخدام بياناتك المحفوظة' });
+    } else {
+      if (!gameProfile.mlbb_id || !gameProfile.mlbb_server) {
+        toast({ title: 'لم تحفظ بيانات Mobile Legends بعد', description: 'سيتم نقلك لصفحة الملف الشخصي' });
+        navigate('/profile');
+        return;
+      }
+      setPlayerId(gameProfile.mlbb_id);
+      setServerNum(gameProfile.mlbb_server);
+      toast({ title: 'تم استخدام بياناتك المحفوظة' });
+    }
+  };
 
   const handleCheckout = () => {
     if (!canCheckout || !game || !server) return;
