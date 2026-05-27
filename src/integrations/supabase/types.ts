@@ -525,7 +525,10 @@ export type Database = {
         Row: {
           created_at: string
           favorite_game: string | null
+          hok_uid: string | null
           id: string
+          mlbb_id: string | null
+          mlbb_server: string | null
           phone: string | null
           total_diamonds: number
           user_id: string
@@ -533,7 +536,10 @@ export type Database = {
         Insert: {
           created_at?: string
           favorite_game?: string | null
+          hok_uid?: string | null
           id?: string
+          mlbb_id?: string | null
+          mlbb_server?: string | null
           phone?: string | null
           total_diamonds?: number
           user_id: string
@@ -541,7 +547,10 @@ export type Database = {
         Update: {
           created_at?: string
           favorite_game?: string | null
+          hok_uid?: string | null
           id?: string
+          mlbb_id?: string | null
+          mlbb_server?: string | null
           phone?: string | null
           total_diamonds?: number
           user_id?: string

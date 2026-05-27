@@ -1,14 +1,16 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Minus, Plus, Gem, LogIn, Clock, Pencil } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Minus, Plus, Gem, LogIn, Clock, Pencil, UserCog } from 'lucide-react';
 import { games, arabicServers, hokServers, mlbbPackages, type PackageItem } from '@/lib/gameData';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStoreOnDuty } from '@/hooks/useStoreOnDuty';
 import { supabase } from '@/integrations/supabase/client';
-import { onlyDigits } from '@/lib/validation';
 import { usePermissions } from '@/hooks/usePermissions';
 import ProductsManagerDialog from '@/components/owner/ProductsManagerDialog';
+import DigitsInput from '@/components/DigitsInput';
+import { useGameProfile } from '@/hooks/useGameProfile';
+import { useToast } from '@/hooks/use-toast';
 
 interface CartItem extends PackageItem {
   qty: number;
@@ -21,9 +23,12 @@ const ProductsPage = () => {
   const { user } = useAuth();
   const { isOwner } = usePermissions();
   const { onDuty } = useStoreOnDuty();
+  const { data: gameProfile } = useGameProfile();
+  const { toast } = useToast();
   const game = games.find((g) => g.id === gameId);
   const serverList = gameId === 'hok' ? hokServers : arabicServers;
   const server = serverList.find((s) => s.id === serverId);
+  const isHok = gameId === 'hok';
 
   const [cart, setCart] = useState<Record<string, CartItem>>({});
   const [playerId, setPlayerId] = useState('');
@@ -87,7 +92,33 @@ const ProductsPage = () => {
     });
   };
 
-  const canCheckout = totalItems > 0 && playerId.trim().length > 0 && serverNum.trim().length > 0 && onDuty === true;
+  const canCheckout = totalItems > 0 && playerId.trim().length > 0 && (isHok || serverNum.trim().length > 0) && onDuty === true;
+
+  const handleUseMyInfo = () => {
+    if (!user) {
+      toast({ title: 'سجل دخولك أولاً لاستخدام بياناتك المحفوظة' });
+      navigate('/auth');
+      return;
+    }
+    if (isHok) {
+      if (!gameProfile.hok_uid) {
+        toast({ title: 'لم تحفظ بيانات Honor of Kings بعد', description: 'سيتم نقلك لصفحة الملف الشخصي' });
+        navigate('/profile');
+        return;
+      }
+      setPlayerId(gameProfile.hok_uid);
+      toast({ title: 'تم استخدام بياناتك المحفوظة' });
+    } else {
+      if (!gameProfile.mlbb_id || !gameProfile.mlbb_server) {
+        toast({ title: 'لم تحفظ بيانات Mobile Legends بعد', description: 'سيتم نقلك لصفحة الملف الشخصي' });
+        navigate('/profile');
+        return;
+      }
+      setPlayerId(gameProfile.mlbb_id);
+      setServerNum(gameProfile.mlbb_server);
+      toast({ title: 'تم استخدام بياناتك المحفوظة' });
+    }
+  };
 
   const handleCheckout = () => {
     if (!canCheckout || !game || !server) return;
@@ -280,35 +311,43 @@ const ProductsPage = () => {
           <>
             {/* Player info form */}
             <div className="glass-card p-4 rounded-2xl space-y-3">
+              <button
+                type="button"
+                onClick={handleUseMyInfo}
+                disabled={onDuty === false}
+                className="w-full flex items-center justify-center gap-2 py-2 rounded-lg border border-primary/40 bg-primary/10 text-primary text-xs font-display font-bold hover:bg-primary/20 transition disabled:opacity-50"
+              >
+                <UserCog size={14} />
+                استخدم معلوماتي
+              </button>
               <div>
                 <label className="text-xs font-display font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">
-                  {lang === 'ar' ? 'الايدي' : 'Player ID'}
+                  {isHok ? (lang === 'ar' ? 'معرف اللاعب (UID)' : 'Player UID') : (lang === 'ar' ? 'الايدي' : 'Player ID')}
                 </label>
-                <input
-                  type="text"
-                  inputMode="numeric"
+                <DigitsInput
                   placeholder="123456780"
                   value={playerId}
                   disabled={onDuty === false}
-                  onChange={(e) => setPlayerId(onlyDigits(e.target.value))}
-                  className="w-full px-3 py-2.5 rounded-md bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  onChange={setPlayerId}
+                  maxLength={15}
                 />
               </div>
-              <div>
-                <label className="text-xs font-display font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">
-                  {lang === 'ar' ? 'السيرفر' : 'Server'}
-                </label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="1234"
-                  value={serverNum}
-                  disabled={onDuty === false}
-                  onChange={(e) => setServerNum(onlyDigits(e.target.value))}
-                  className="w-full px-3 py-2.5 rounded-md bg-muted border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-              </div>
+              {!isHok && (
+                <div>
+                  <label className="text-xs font-display font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">
+                    {lang === 'ar' ? 'السيرفر' : 'Server'}
+                  </label>
+                  <DigitsInput
+                    placeholder="1234"
+                    value={serverNum}
+                    disabled={onDuty === false}
+                    onChange={setServerNum}
+                    maxLength={8}
+                  />
+                </div>
+              )}
             </div>
+
 
             {onDuty !== false && (
               <button
